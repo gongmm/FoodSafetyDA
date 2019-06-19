@@ -1,29 +1,9 @@
-﻿# ignore data & result of wqm_src
-wqm_src/**/data/*
-wqm_src/**/result/*
-wqm_src/**/corpus/*
-wqm_src/**/*.csv
-wqm_src/**/m4a_audios/*
-wqm_src/**/wav_audios/*
-dn_src/**/data/*
-dn_src/**/result/*
-dn_src/**/corpus/*
-dn_src/**/*.csv
-dn_src/**/*.txt
-dn_src/**/demotext
-dn_src/**/shipintest
-dn_src/**/*.png
-dn_src/**/tex2pdf
-dn_src/**/.idea
-dn_src/**/ckpt
-dn_src/**/word2vec_models
-dn_src/**/models
-dn_src/**/doc_topic
-dn_src/**/txt
-dn_src/**/*.xls
+# Created by .ignore support plugin (hsz.mobi)
+### Python template
+/.idea
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -32,6 +12,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -43,11 +24,9 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -67,9 +46,8 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*.cover
+*,cover
 .hypothesis/
-.pytest_cache/
 
 # Translations
 *.mo
@@ -78,7 +56,6 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
 
 # Flask stuff:
 instance/
@@ -93,37 +70,25 @@ docs/_build/
 # PyBuilder
 target/
 
-# Jupyter Notebook
+# IPython Notebook
 .ipynb_checkpoints
 
 # pyenv
 .python-version
 
-# celery beat schedule file
+# celery beat schedule files
 celerybeat-schedule
 
-# SageMath parsed files
-*.sage.py
-
-# Environments
+# dotenv
 .env
-.venv
-env/
+
+# virtualenv
 venv/
 ENV/
-env.bak/
-venv.bak/
 
 # Spyder project settings
 .spyderproject
-.spyproject
 
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
