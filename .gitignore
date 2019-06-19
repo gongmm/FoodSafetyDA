@@ -1,3 +1,11 @@
+# ignore data & result of wqm_src
+wqm_src/**/data/*
+wqm_src/**/result/*
+wqm_src/**/corpus/*
+wqm_src/**/*.csv
+wqm_src/**/m4a_audios/*
+wqm_src/**/wav_audios/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

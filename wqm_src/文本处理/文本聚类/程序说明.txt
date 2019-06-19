@@ -1,0 +1,8 @@
+data文件夹:原始数据文件
+settings文件夹：停用词表
+
+result文件夹：生成的数据:
+	2018-1-1.csv中包含一月份的文章和其所对应的topic编号
+	topic_words2018-1-1.txt中包含聚类topic每个topic对应的关键词
+
+corpus文件夹：保存的json格式的Corpus语料库
