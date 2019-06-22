@@ -127,3 +127,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
+*.rar
