@@ -12,9 +12,9 @@ def init_client():
     初始设置
     :return:
     """
-    APP_ID = ''
-    API_KEY = ''
-    SECRET_KEY = ''
+    APP_ID = '16564133'
+    API_KEY = 'jOXlr6E5BNc71h7uotcVmCjZ'
+    SECRET_KEY = 'sDXVWij9qd3X4NBjroC49LjBO2h0t08I'
 
     client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
     return client

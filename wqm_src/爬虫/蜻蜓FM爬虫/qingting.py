@@ -114,11 +114,11 @@ def qingting_spider(begin,end):
                     fm_info = dict()
                     fm_info['fm_name'] = str(x.get('mediainfo_id')) + x.get('title') #音频名称
                     fm_info['fm_url'] = root_url + x.get('file_path')  #音频源链接
-                    #download_fm(fm_info['fm_url'],fm_info['fm_name'],'fm')    #下载音频到本地
+                    download_fm(fm_info['fm_url'],fm_info['fm_name'],'fm')    #下载音频到本地
                     my_set.insert(fm_info)   #存储数据入数据库
                     #print(fm_info)
 
 
 
 if __name__ == '__main__':
-    qingting_spider(1,1000)
+    qingting_spider(1,10)
