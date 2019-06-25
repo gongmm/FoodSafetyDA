@@ -27,8 +27,8 @@ yiner_src/wav_audios1
 yiner_src/words_result
 wza_src/**/.idea
 wza_src/**/ckpt
-wza_src/**/data
 wza_src/**/result
+wza_src/CutNews/data
 
 # all .DS_Store
 .DS_Store
