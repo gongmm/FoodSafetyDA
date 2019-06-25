@@ -26,6 +26,10 @@ yiner_src/wav_audios
 yiner_src/wav_audios1
 yiner_src/words_result
 
+# all .DS_Store
+.DS_Store
+*/**/.DS_Store
+
 # ignore settings
 **/.idea/
 **/fm/
