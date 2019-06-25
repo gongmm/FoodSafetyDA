@@ -15,12 +15,12 @@ def createcorpus():
     corpustext = readtxt('../corpus/doc_shipin.txt')
     # id2word = corpora.Dictionary.load_from_text(corpus)
     # mm = corpora.MmCorpus('doc_shipin.mm')
-    bb = Dictionary(corpustext)
+    dictionary = Dictionary(corpustext)
     corpus = [dictionary.doc2bow(text) for text in corpustext]
     # 模型训练
     lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=106)
 
-    lda.get_topics()
+    # lda.get_topics()
 
     # 打印前20个topic的词分布
     print(lda.print_topics(10, 10))
@@ -36,7 +36,7 @@ def createcorpus():
 if __name__=='__main__':
     # 语料导入
     # 模型的保存和加载
-
+    createcorpus()
 
     #对新文档预测
     testdoc=[]
