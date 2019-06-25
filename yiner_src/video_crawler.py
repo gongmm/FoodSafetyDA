@@ -13,7 +13,9 @@ from urllib.request import urlretrieve
 from pyquery import PyQuery as pq
 from multiprocessing import Pool
 
-dir_name = 'cctv_video'
+base_dir = 'ts_videos'
+dir_name = 'wav_audios'
+working_path = '/Users/yiner/Desktop/lab-exp/FoodSafetyDA/yiner_src'
 
 class cctv_spider():
     def __init__(self):
@@ -121,7 +123,8 @@ class cctv_spider():
                     response = requests.get(self.m3u8_url, headers=self.header)
                     html = response.text
                     print('获取m3u8文件成功，准备下载文件')
-                    self.title = ''.join(key.split()) # 去掉字符串中间的空格
+                    video_dir = ''.join(key.split())
+                    self.title = os.path.join(base_dir, video_dir) # 去掉字符串中间的空格
                     self.parse_ts(html)
                 except Exception as err:
                     print(err)
@@ -133,21 +136,28 @@ class cctv_spider():
         print(self.ts_lists)
         print('信息提取完成......\n准备下载...')
         self.pool()
+        self.ts_to_mp4()
 
     def pool(self):
         print('经计算需要下载%d个文件' % len(self.ts_lists))
         self.ts_url = self.m3u8_url[:-10]
-        if self.title not in os.listdir():
+        if base_dir not in os.listdir():
+            os.makedirs(base_dir)
+        video_dir = os.path.split(self.title)[-1]
+        if video_dir not in os.listdir(base_dir):
             os.makedirs(self.title)
+        elif '0.ts' in os.listdir(self.title):
+            print('已下载ts文件')
+            return
+
         print('正在下载...所需时间较长，请耐心等待..')
         #开启多进程下载
         i = 0
-        pool=Pool(16) # 加锁初始化
+        pool=Pool(16)
         pool.map(self.save_ts, [ts_list for ts_list in self.ts_lists])
         pool.close()
         pool.join()
         print('下载完成')
-        self.ts_to_mp4()
 
     def sort_key(self, s):
         if s:
@@ -158,9 +168,17 @@ class cctv_spider():
             return int(c)
 
     def ts_to_mp4(self):
-        print('ts文件正在进行转录mp4......')
+        # 检测是否已存在wav文件
+        video_dir = os.path.split(self.title)[-1]
+        filename = os.path.join(dir_name, video_dir + '.wav')
         if dir_name not in os.listdir():
             os.makedirs(dir_name)
+        elif os.path.isfile(filename):
+            print('wav文件已存在')
+            return
+
+        # 开始格式转换
+        print('ts文件正在进行转录wav......')
         dir_list = os.listdir(self.title)
         if '.DS_Store' in dir_list:
             index = dir_list.index('.DS_Store')
@@ -171,9 +189,11 @@ class cctv_spider():
             dir_list[index] = file
         dirs = '|'.join(dir_list) 
         dirs = 'concat:' + dirs
-        str = 'ffmpeg -y -i "' + dirs + '" -vn -acodec copy ' + dir_name + '/' + self.title + '.wav'
+        
+        str = 'ffmpeg -y -i "' + dirs + '" -vn -acodec copy ' + filename
         os.system(str)
-        filename = self.title + '.wav'
+
+        print(filename)
         if os.path.isfile(filename):
             print('转换完成')
             shutil.rmtree(self.title)
@@ -183,12 +203,18 @@ class cctv_spider():
         try:
             ts_urls = self.ts_url + '/{}'.format(ts_list)
             print(ts_urls)
-            #urlretrieve(url=ts_urls, 
-            #    filename=self.title + '/{}'.format(ts_list))
+            urlretrieve(url=ts_urls, 
+                filename=self.title + '/{}'.format(ts_list))
         except Exception as err:
             print(err)
             print('保存文件出现错误')
 
 
 if __name__ == '__main__':
+    # 工作目录设为yiner_src
+    pwd = os.getcwd()
+    if not pwd == working_path:
+        os.chdir(working_path)
+    print(os.getcwd())
+    # 开始爬虫
     cctv_spider()
