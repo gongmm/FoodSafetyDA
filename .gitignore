@@ -21,6 +21,8 @@ dn_src/**/models
 dn_src/**/doc_topic
 dn_src/**/txt
 dn_src/**/*.xls
+yiner_src/ts_videos
+yiner_src/wav_audios
 
 # ignore settings
 **/.idea/
