@@ -50,7 +50,7 @@ def pcm2word(filepath,client):
     with open(filepath,'rb') as f:
         file = f.read()
     result = client.asr(file, 'pcm', 16000, {
-        'dev_pid': 1536,
+        'dev_pid': 1537,   # 1536无标点
     })
     #print(result)
 
@@ -196,7 +196,7 @@ if __name__=='__main__':
     print('________________________________')
     print('音频识别开始')
     t_begin = time.time()
-    audio_process('wav_audios')
+    audio_process('wav_audios1')
     t_end = time.time()
     print('音频识别结束')
     t = t_end-t_begin
