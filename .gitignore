@@ -25,6 +25,10 @@ yiner_src/ts_videos
 yiner_src/wav_audios
 yiner_src/wav_audios1
 yiner_src/words_result
+wza_src/**/.idea
+wza_src/**/ckpt
+wza_src/**/data
+wza_src/**/result
 
 # all .DS_Store
 .DS_Store
@@ -140,3 +144,4 @@ venv.bak/
 .mypy_cache/
 dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
 *.rar
+wza_src/ChineseNER/wiki_100.utf8
