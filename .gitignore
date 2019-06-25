@@ -1,4 +1,4 @@
-﻿# ignore data & result of wqm_src
+# ignore data & result of wqm_src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -21,6 +21,12 @@ dn_src/**/models
 dn_src/**/doc_topic
 dn_src/**/txt
 dn_src/**/*.xls
+yiner_src/ts_videos
+yiner_src/wav_audios
+
+# ignore settings
+**/.idea/
+**/fm/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

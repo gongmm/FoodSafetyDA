@@ -1,16 +1,19 @@
-#-*- coding:utf-8-*-
-from gensim import corpora,models
+# -*- coding:utf-8-*-
+from gensim import corpora, models
 from gensim.corpora import Dictionary
 from gensim.models import LdaModel
 
+"""获得指定路径文档中的语料"""
 def readtxt(filepath):
     corpus = []
-    with open(filepath,'r', encoding='UTF-8') as f:
+    with open(filepath, 'r', encoding='UTF-8') as f:
         for line in f.readlines():
-            linewords=line.split()
+            linewords = line.split()
             for word in linewords:
                 corpus.append([word])
     return corpus
+
+
 def createcorpus():
     corpustext = readtxt('../corpus/doc_shipin.txt')
     # id2word = corpora.Dictionary.load_from_text(corpus)
@@ -25,21 +28,24 @@ def createcorpus():
     # 打印前20个topic的词分布
     print(lda.print_topics(10, 10))
     lda.save('../corpus/shipin.model')
-    #提取每篇文档所属主题
+    # 提取每篇文档所属主题
+    # get_document_topics 获得文档的主题分布
     for i in lda.get_document_topics(corpus)[:]:
-        listj=[]
+        listj = []
         for j in i:
             listj.append(j[1])
-        bz=listj.index(max(listj))
+        bz = listj.index(max(listj))
         print(i[bz][0])
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     # 语料导入
     # 模型的保存和加载
-    createcorpus()
 
-    #对新文档预测
-    testdoc=[]
+
+    # 对新文档预测
+    testdoc = []
+
     with open('../txt/topic_doc_pk/topic0/topic0_doc978.txt', 'r', encoding='utf-8') as f:
         for line in f.readlines():
             linewords = line.split()
@@ -52,4 +58,4 @@ if __name__=='__main__':
     doc_lda = lda[doc_bow]
     print(doc_lda)
     for topic in doc_lda:
-        print("%s\t%f\n" % (lda.print_topic(topic[0]) ,topic[1]))
+        print("%s\t%f\n" % (lda.print_topic(topic[0]), topic[1]))

@@ -7,6 +7,8 @@ import shutil
 import os.path
 import time
 
+result_dir = 'words_result'
+
 def init_client():
     """
     初始设置
@@ -19,30 +21,21 @@ def init_client():
     client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
     return client
 
-
-def m4a2wav(m4a_path,wav_path):
-    """
-    批量转换文件夹中的m4a文件为wav文件
-    :param m4a_path: m4a文件夹路径
-    :return:
-    """
-    m4a_file = os.listdir(m4a_path+'/')
-    #wav_path = 'wav_audios/'
-    wav_path = wav_path+'/'
-    for i, m4a in enumerate(m4a_file[1:]):
-        os.system("ffmpeg -i " + m4a_path +'/'+ m4a + " " + wav_path + str(i+1) + ".wav")
-
 def wav2pcm(wav_path):
-    """
-    批量转换文件夹中的wav文件为pcm文件
-    :param wav_path:
-    :return:
-    """
+    """批量转换文件夹中的wav文件为pcm文件"""
     wav_file = os.listdir(wav_path)
-    #for i,wav in enumerate(wav_file[1:]):
+    if '.DS_Store' in wav_file:
+        index = wav_file.index('.DS_Store')
+        wav_file.pop(index)
+
+    # 保证文件顺序是正确的
+    wav_file.sort()
+    #print(wav_file)
+
     for i, wav in enumerate(wav_file):
-        os.system('ffmpeg -y  -i '+wav_path+'/'+wav+'  -acodec pcm_s16le -f s16le -ac 1 -ar 16000 '+wav_path+'/'+str(i)+'.pcm ')
-        os.remove(wav_path+'/'+wav) # 删除文件夹中的wav文件
+        wav_name = os.path.join(wav_path, wav)
+        os.system('ffmpeg -y  -i '+ wav_name +'  -acodec pcm_s16le -f s16le -ac 1 -ar 16000 ' + wav_path + '/' + str(i) + '.pcm')
+        os.remove(wav_name) # 删除文件夹中的wav文件
 
 def pcm2word(filepath,client):
     """
@@ -51,13 +44,13 @@ def pcm2word(filepath,client):
     支持的格式有：pcm（不压缩）、wav（不压缩，pcm编码）、amr（压缩格式）。
     :param filepath: 单个pcm文件路径
     :param client:  初始化client
-    :return:
+    :return: 识别的文字
     """
     #client = init_client()
     with open(filepath,'rb') as f:
         file = f.read()
     result = client.asr(file, 'pcm', 16000, {
-        'dev_pid': 1536,
+        'dev_pid': 1537,   # 1536无标点
     })
     #print(result)
 
@@ -69,24 +62,31 @@ def pcm2word(filepath,client):
         #print('错误编号%d'%result['err_no'])
         return ''
 
-def getText(filename):
+def getText(filename, wav):
     """
     识别音频中的文字
     :param filename: pcm文件夹路径
-    :return:
+    :return:识别的文字
     """
     client = init_client()
     pcm_file = os.listdir(filename)
+
+    # 保证文件顺序是正确的
+    pcm_file.sort()
+    #print(pcm_file)
+
     content = ''
     for i, pcm in enumerate(pcm_file):
-        text = pcm2word(filename + '/' + pcm, client)
+        text = pcm2word(os.path.join(filename, pcm), client)
         content = content + text
-    #print(content)
-    with open(filename+'.txt','w') as f:
+ 
+    # 获得文件名
+    result_file = os.path.splitext(wav)[0] + '.txt'
+    with open(os.path.join(result_dir, result_file),'w') as f:
         f.write(content)
     return content
 
-def cut_wav(wav_name,cutdir_name):
+def cut_wav(wav_name, cutdir_name):
     """
     分割wav音频文件
     :param filename:wav音频文件路径
@@ -95,7 +95,8 @@ def cut_wav(wav_name,cutdir_name):
     """
     # 设置分割时长间隔
     cuttime = 60
-    f = wave.open(r""+wav_name,'rb')
+    print(wav_name)
+    f = wave.open(wav_name, 'rb')
 
     #读取格式信息，返回tuple(声道数，采样宽度，采样频率，采样点数，压缩类型，压缩类型描述)
     params = f.getparams()
@@ -121,7 +122,7 @@ def cut_wav(wav_name,cutdir_name):
     # 对音频文件进行分割
     while StepTotalNum < nframes:
         # 设置分割后的文件路径
-        FileName = cutdir_name+'/'+str(count)+'.wav'
+        FileName = os.path.join(cutdir_name, str(count) + '.wav')
 
         temp_dataTemp = temp_data[StepNum * (count):StepNum * (count + 1)]
         count = count + 1;
@@ -138,76 +139,66 @@ def cut_wav(wav_name,cutdir_name):
         f.close()
 
 def del_file(path):
-    """
-    删除指定目录和目录下的所有文件
-    :param path:
-    :return:
-    """
-    ls = os.listdir(path)
-    for i in ls:
-        c_path = os.path.join(path, i)
-        if os.path.isdir(c_path):
-            del_file(c_path)
-        else:
-            os.remove(c_path)
+    """删除指定目录和目录下的所有文件"""
     shutil.rmtree(path)
 
 def audio2text(wav_path):
     """
     遍历wav文件夹，识别每个wav的文字内容
     :param wav_path: wav文件夹路径
-    :return:
     """
     wav_file = os.listdir(wav_path)
-    for i,wav in enumerate(wav_file[1:]):
+    # 排除.DS_Store文件
+    if '.DS_Store' in wav_file:
+        index = wav_file.index('.DS_Store')
+        wav_file.pop(index)
+    for i,wav in enumerate(wav_file): 
         print(wav)
         # 生成的分割文件夹路径
-        newdirname = wav_path+'/'+str(i+1)
+        newdirname = os.path.join(wav_path, str(i+1))
 
-        # 为每个音频创造一个文件夹存储分割后的音频
-        os.mkdir(newdirname)
+        try:
+            # 为每个音频创造一个文件夹存储分割后的音频
+            os.mkdir(newdirname)
 
-        # 原wav文件路径
-        wav_name = wav_path+'/'+wav
+            # 原wav文件路径
+            wav_name = os.path.join(wav_path, wav)
 
-        # 切割wav文件
-        print('______分割wav文件______')
-        cut_wav(wav_name,newdirname)
+            # 切割wav文件
+            print('______分割wav文件______')
+            cut_wav(wav_name, newdirname)
 
-        # 将wav文件全部转换为pcm文件
-        print('______wav转化为pcm______')
-        wav2pcm(newdirname)
+            # 将wav文件全部转换为pcm文件
+            print('______wav转化为pcm______')
+            wav2pcm(newdirname)
 
-        # 提取pcm文件夹中所有pcm文件的文字
-        print('______音频提取文字______')
-        text = getText(newdirname)
-        print(text)
+            # 提取pcm文件夹中所有pcm文件的文字
+            print('______音频提取文字______')
+            text = getText(newdirname, wav)
+            print(text)
 
-        #删除生成的文件夹
-        del_file(newdirname)
+        except Exception as err:
+            print(err)
+        finally:
+            #删除生成的文件夹
+            del_file(newdirname)
 
-def audio_process(m4a_path,wav_path):
-    """
-    处理音频
-    :param m4a_path:
-    :param wav_path:
-    :return:
-    """
-    m4a2wav(m4a_path,wav_path)
+def audio_process(wav_path):
+    """处理音频"""
     print('提取文字开始')
+     #创建一个文件夹存放识别结果
+    if result_dir not in os.listdir():
+        os.mkdir(result_dir)
     audio2text(wav_path)
 
 
 if __name__=='__main__':
-    #m4a2wav('m4a_audios')  # 批量转换m4a为wav文件
-    #audio2text('wav_audios')
     print('________________________________')
     print('音频识别开始')
     t_begin = time.time()
-    audio_process('文本数据提取/音频文本提取/m4a_audios','文本数据提取/音频文本提取/wav_audios')
-    #audio_process('m4a_audios', 'wav_audios')
+    audio_process('wav_audios1')
     t_end = time.time()
-
-    #print('音频: 永辉超市因食品安全不合格连登“黑榜”.m4a 识别结束')
+    print('音频识别结束')
     t = t_end-t_begin
     print('程序消耗时间：'+str(t))
+    print('________________________________')
