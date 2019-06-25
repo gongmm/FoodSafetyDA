@@ -1,47 +1,12 @@
-# ignore data & result of wqm_src
-wqm_src/**/data/*
-wqm_src/**/result/*
-wqm_src/**/corpus/*
-wqm_src/**/*.csv
-wqm_src/**/m4a_audios/*
-wqm_src/**/wav_audios/*
-dn_src/**/data/*
-dn_src/**/result/*
-dn_src/**/corpus/*
-dn_src/**/*.csv
-dn_src/**/*.txt
-dn_src/**/demotext
-dn_src/**/shipintest
-dn_src/**/*.png
-dn_src/**/tex2pdf
-dn_src/**/.idea
-dn_src/**/ckpt
-dn_src/**/word2vec_models
-dn_src/**/models
-dn_src/**/doc_topic
-dn_src/**/txt
-dn_src/**/*.xls
-yiner_src/ts_videos
-yiner_src/wav_audios
-yiner_src/wav_audios1
-yiner_src/words_result
-wza_src/**/.idea
-wza_src/**/ckpt
-wza_src/**/result
-wza_src/CutNews/data
-
-# all .DS_Store
-.DS_Store
-*/**/.DS_Store
-
-# ignore settings
-**/.idea/
-**/fm/
-
+# Created by .ignore support plugin (hsz.mobi)
+### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# IDE project configs
+.idea/
 
 # C extensions
 *.so
@@ -142,11 +107,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
-*.rar
-wza_src/ChineseNER/wiki_100.utf8
-*.png
-wza_src/YEDDA-new/demotext
-wza_src/YEDDA-new/shipintest
-wza_src/YEDDA-new/tex2pdf
-*.gitkeep
+
