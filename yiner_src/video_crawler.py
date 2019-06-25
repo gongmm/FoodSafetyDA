@@ -1,7 +1,8 @@
 '''
-作者：艾小张 
+原作者：艾小张 
 来源：CSDN 
 原文：https://blog.csdn.net/sinat_26549677/article/details/84548471 
+改编：yiner
 '''
 
 
@@ -16,6 +17,8 @@ from multiprocessing import Pool
 base_dir = 'ts_videos'
 dir_name = 'wav_audios'
 working_path = '/Users/yiner/Desktop/lab-exp/FoodSafetyDA/yiner_src'
+page_url_head = 'https://search.cctv.com/ifsearch.php?page='
+page_url_tail = '&qtext=食品&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=5&channel=不限&pageflag=0&qtext_str=食品'
 
 class cctv_spider():
     def __init__(self):
@@ -27,30 +30,31 @@ class cctv_spider():
         'Cache-Control': 'max-age=0',
         'Proxy-Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1'}
-        self.url = 'https://search.cctv.com/ifsearch.php?page=1&qtext=食品&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=5&channel=不限&pageflag=0&qtext_str=食品'
+        self.url = page_url_head + str(1) + page_url_tail
         self.totalpage = 0
-        # 设置多线程数量
-        self.thread_num = 32
+
         # 设置视频信息列表字典
         self.video_dict = {}
         # ts文件列表
         self.ts_lists = []
-        # 当前已经下载的文件数目
-        #self.i = 0
+
         # 调用网页获取
-        json_data = self.get_json_page(self.url)
+        json_data = self.get_page(self.url)
         if json_data:
             # 解析网页
             self.parse_json(json_data)
+            if not self.totalpage == 0:
+                for i in range(2, self.totalpage+1):
+                    self.url = page_url_head + str(i) + page_url_tail
+                    json_data = self.get_page(self.url)
+                    self.parse_json(json_data)
 
-    def get_json_page(self, url):
+    def get_page(self, url):
         try:
             print('正在请求目标网页....\n',url)
             response=requests.get(url, headers=self.header, verify=False)
             if response.status_code==200:
-                #print(response.text)
                 print('请求目标网页完成....\n 准备解析....')
-                #self.header['referer'] = url
                 return response.text
         except Exception as err:
             print(err)
@@ -62,13 +66,16 @@ class cctv_spider():
         text = json.loads(json_data)
         print(type(text))
         if text and 'totalpage' in text.keys():
-            self.totalpage = text.get('totalpage')
+            if self.totalpage == 0:
+                self.totalpage = text.get('totalpage')
         if text and 'list' in text.keys():
             item_list = text.get('list')
             # 仅获得标题和url，可排除重复标题项
             # 剔除CCTV-10科教频道的视频
             for item in item_list:
                 if item.get('channel') == 'CCTV-10科教频道':
+                    continue
+                if item.get('durations') >= 180:
                     continue
                 title = item.get('all_title')
                 title = title.split(']')[-1]
@@ -78,9 +85,9 @@ class cctv_spider():
         self.get_m3u8()
 
     def get_m3u8(self):
-        '''
+        # 所有视频文件都下载
         for key in self.video_dict:
-            html = self.get_json_page(self.video_dict.get(key))
+            html = self.get_page(self.video_dict.get(key))
             if html:
                 # 获取videoCenterId
                 doc = pq(html)
@@ -98,14 +105,18 @@ class cctv_spider():
                         response = requests.get(self.m3u8_url, headers=self.header)
                         html = response.text
                         print('获取m3u8文件成功，准备下载文件')
-                        self.title = key
+
+                        video_dir = ''.join(key.split()) # 去掉字符串中间的空格
+                        self.title = os.path.join(base_dir, video_dir) 
+
                         self.parse_ts(html)
                     except Exception as err:
                         print(err)
                         print('缓存文件请求错误，请检查错误')
-        '''
+        # 只下单个视频文件
+        '''  
         key = '国务院食品安全办 多数居民存在食品安全认知误区'
-        html = self.get_json_page(self.video_dict.get(key))
+        html = self.get_page(self.video_dict.get(key))
         if html:
             # 获取videoCenterId
             doc = pq(html)
@@ -123,12 +134,15 @@ class cctv_spider():
                     response = requests.get(self.m3u8_url, headers=self.header)
                     html = response.text
                     print('获取m3u8文件成功，准备下载文件')
-                    video_dir = ''.join(key.split())
-                    self.title = os.path.join(base_dir, video_dir) # 去掉字符串中间的空格
+
+                    video_dir = ''.join(key.split()) # 去掉字符串中间的空格
+                    self.title = os.path.join(base_dir, video_dir) 
+
                     self.parse_ts(html)
                 except Exception as err:
                     print(err)
                     print('缓存文件请求错误，请检查错误')
+        '''
 
     def parse_ts(self, html):
         pattern = re.compile('\d+.ts')
@@ -189,14 +203,14 @@ class cctv_spider():
             dir_list[index] = file
         dirs = '|'.join(dir_list) 
         dirs = 'concat:' + dirs
-        
-        str = 'ffmpeg -y -i "' + dirs + '" -vn -acodec copy ' + filename
+        # wav的格式必须是pcm_s16le
+        str = 'ffmpeg -y -i "' + dirs + '" -vn -acodec pcm_s16le -f wav -ar 16000 ' + filename
         os.system(str)
 
         print(filename)
         if os.path.isfile(filename):
             print('转换完成')
-            shutil.rmtree(self.title)
+            #shutil.rmtree(self.title)
         
 
     def save_ts(self, ts_list):
