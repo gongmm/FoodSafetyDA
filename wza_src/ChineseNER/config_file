@@ -1,7 +1,7 @@
 {
-    "num_chars": 4412,
+    "num_chars": 3305,
     "char_dim": 100,
-    "num_tags": 13,
+    "num_tags": 3,
     "seg_dim": 20,
     "lstm_dim": 100,
     "batch_size": 20,
@@ -10,7 +10,7 @@
     "dropout_keep": 0.5,
     "optimizer": "adam",
     "lr": 0.001,
-    "tag_schema": "iobes",
+    "tag_schema": "iob",
     "pre_emb": true,
     "zeros": false,
     "lower": true

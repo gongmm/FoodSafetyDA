@@ -13,6 +13,7 @@ def create_dico(item_list):
     """
     Create a dictionary of items from a list of list of items.
     """
+
     assert type(item_list) is list
     dico = {}
     for items in item_list:
@@ -29,7 +30,8 @@ def create_mapping(dico):
     Create a mapping (item to ID / ID to item) from a dictionary.
     Items are ordered by decreasing frequency.
     """
-    sorted_items = sorted(dico.items(), key=lambda x: (-x[1], x[0]))
+    #dico为字典形式，KEY为词，value为词出现的顺序
+    sorted_items = sorted(dico.items(), key=lambda x: (-x[1], x[0]))#倒序排列，按出现次数从大到小
     id_to_item = {i: v[0] for i, v in enumerate(sorted_items)}
     item_to_id = {v: k for k, v in id_to_item.items()}
     return item_to_id, id_to_item
@@ -286,7 +288,7 @@ class BatchManager(object):
         self.len_data = len(self.batch_data)
 
     def sort_and_pad(self, data, batch_size):
-        num_batch = int(math.ceil(len(data) /batch_size))
+        num_batch = int(math.ceil(len(data) //batch_size))
         sorted_data = sorted(data, key=lambda x: len(x[0]))
         batch_data = list()
         for i in range(num_batch):
