@@ -91,6 +91,7 @@ class cctv_spider():
                     time.sleep(1)
                     json_data = self.get_page(self.url)
                     self.parse_json(json_data)
+                    self.video_dict = {}
 
     def get_page(self, url):
         try:
@@ -130,6 +131,21 @@ class cctv_spider():
     def get_m3u8(self):
         # 所有视频文件都下载
         for key in self.video_dict:
+            #
+            video_dir = ''.join(key.split()) # 去掉字符串中间的空格
+            self.title = os.path.join(base_dir, video_dir) 
+            if base_dir not in os.listdir():
+                os.makedirs(base_dir)
+            video_dir = os.path.split(self.title)[-1]
+            print(video_dir)
+            if video_dir not in os.listdir(base_dir):
+                os.makedirs(self.title)
+            elif '0.ts' in os.listdir(self.title):
+                print('已下载ts文件')
+                self.ts_to_mp4()
+                return
+
+            # 得到m3u8地址
             html = self.get_page(self.video_dict.get(key))
             if html:
                 # 获取videoCenterId
@@ -148,9 +164,6 @@ class cctv_spider():
                         response = requests.get(self.m3u8_url, headers=self.header)
                         html = response.text
                         print('获取m3u8文件成功，准备下载文件')
-
-                        video_dir = ''.join(key.split()) # 去掉字符串中间的空格
-                        self.title = os.path.join(base_dir, video_dir) 
 
                         self.parse_ts(html)
                     except Exception as err:
