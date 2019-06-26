@@ -13,6 +13,7 @@ from urllib.request import urlretrieve
 from pyquery import PyQuery as pq
 from multiprocessing import Pool
 import random
+import time
 
 UA_LIST = [
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
@@ -57,7 +58,7 @@ dir_name = 'wav_audios'
 # working_path = '/Users/yiner/Desktop/lab-exp/FoodSafetyDA/yiner_src'
 working_path = 'D:/FoodSafetyDA/yiner_src'
 page_url_head = 'https://search.cctv.com/ifsearch.php?page='
-page_url_tail = '&qtext=食品&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=5&channel=不限&pageflag=0&qtext_str=食品'
+page_url_tail = '&qtext=食品&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=1&channel=不限&pageflag=0&qtext_str=食品'
 
 class cctv_spider():
     def __init__(self):
@@ -84,16 +85,17 @@ class cctv_spider():
             # 解析网页
             self.parse_json(json_data)
             if not self.totalpage == 0:
-                for i in range(18, self.totalpage+1):
+                for i in range(100, self.totalpage+1):
                     print(i)
                     self.url = page_url_head + str(i) + page_url_tail
+                    time.sleep(1)
                     json_data = self.get_page(self.url)
                     self.parse_json(json_data)
 
     def get_page(self, url):
         try:
             print('正在请求目标网页....\n',url)
-            response=requests.get(url, headers=self.header, verify=False)
+            response=requests.get(url, headers=self.header, verify=False, timeout=10)
             if response.status_code==200:
                 print('请求目标网页完成....\n 准备解析....')
                 return response.text
@@ -261,6 +263,7 @@ class cctv_spider():
             print(ts_urls)
             urlretrieve(url=ts_urls, 
                 filename=self.title + '/{}'.format(ts_list))
+            time.sleep(1)
         except Exception as err:
             print(err)
             print('保存文件出现错误')
