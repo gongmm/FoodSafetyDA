@@ -13,10 +13,10 @@ def read_dir_file(readfile, writefile, topic_id):
         out = open(writefile, 'w', encoding='utf-8')
         for row in rows:
             if row['topicid'] == str(topic_id):
-                weibo_content = row['content']
+                content = row['content']
                 import re
                 # 去掉数字：将0-9替换为‘’
-                res = re.sub('[０-９]', '', weibo_content)
+                res = re.sub('[０-９]', '', content)
                 # 微博内容的分词结果
                 row_list = [eachWord for eachWord in jieba.cut(res)]  # 分词
                 # 每条微博内容去掉停用词后的结果
@@ -39,5 +39,6 @@ def read_dir_file(readfile, writefile, topic_id):
 
 
 if __name__ == '__main__':
+    # 106个主题
     for i in range(106):
         read_dir_file('../csv/testcsv/weiboshipin.csv', '../txt/weibo/weiboshipin_topic' + str(i) + '.txt', i)
