@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans
 from time import time
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.externals import joblib
 from sklearn import metrics
 import numpy as np
 import lda
@@ -19,8 +20,7 @@ class LDAClass:
     def get_corpus(self, filepath):
         with open(filepath, 'r', encoding='UTF-8') as file:
             for line in file.readlines():
-                for word in line.split(" "):
-                    self.corpus.append(word)
+                self.corpus.append(line.strip())
         print(self.corpus)
 
     '''打印lda主题词'''
@@ -106,6 +106,7 @@ class LDAClass:
                         writer.writerow([str(docid), str(topicid)])
 
     '''将topic存入单独的csv文件'''
+
     def get_topic_word(self, topic_word, word):
 
         with open('result/food_topic.csv', 'w', encoding='utf-8', newline='') as csv_file:
@@ -115,6 +116,7 @@ class LDAClass:
                 topic_words = np.array(word)[np.argsort(topic_dist)][:-(n + 1):-1]
                 csv_writer.writerow([i, ' '.join(topic_words)])
                 print(u'*Topic {}\n- {}'.format(i, ' '.join(topic_words)))
+
     """lda test"""
 
     def lda_food_test(self):
@@ -142,6 +144,8 @@ class LDAClass:
         '''LDA模型调用'''
         lda_model = lda.LDA(n_topics=106, n_iter=1000, random_state=1)
         lda_model.fit(weight)
+        joblib.dump(lda_model, 'result/model.lda')
+        # lda_model = joblib.load('result/model.lda')
         # 主题-词分布
         topic_word = lda_model.topic_word_
         n = 20  # 输出前20个主题词
@@ -150,10 +154,18 @@ class LDAClass:
         self.save_topic(lda_model, '../csv/testcsv/shipinprocess.csv', '../csv/testcsv/shipinprocess_new.csv')
 
 
-if __name__ == '__main__':
-    lda = LDAClass()
+def model_test():
+    lda_model = joblib.load('result/model.lda')
+    # 主题-词分布
+    topic_word = lda_model.topic_word_
+    n = 20  # 输出前20个主题词
 
-    lda.lda_food_test()
+
+if __name__ == '__main__':
+    lda_class = LDAClass()
+
+    lda_class.lda_food_test()
+    # model_test()
     # from numpy import random
 
     # doc_topic = random.random(size=(10890, 81))
