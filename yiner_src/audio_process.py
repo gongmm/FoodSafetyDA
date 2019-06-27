@@ -196,7 +196,7 @@ if __name__=='__main__':
     print('________________________________')
     print('音频识别开始')
     t_begin = time.time()
-    audio_process('wav_audios1')
+    audio_process('wav_audios')
     t_end = time.time()
     print('音频识别结束')
     t = t_end-t_begin
