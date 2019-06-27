@@ -1,4 +1,4 @@
-﻿# ignore data & result of wqm_src
+# ignore data & result of wqm_src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -147,8 +147,8 @@ venv.bak/
 dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
 *.rar
 wza_src/ChineseNER/wiki_100.utf8
-*.png
 wza_src/YEDDA-new/demotext
 wza_src/YEDDA-new/shipintest
 wza_src/YEDDA-new/tex2pdf
 *.gitkeep
+wza_src/YEDDA-new/*.png
