@@ -151,3 +151,4 @@ wza_src/YEDDA-new/demotext
 wza_src/YEDDA-new/shipintest
 wza_src/YEDDA-new/tex2pdf
 *.gitkeep
+wza_src/YEDDA-new/*.png
