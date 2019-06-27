@@ -1,4 +1,4 @@
-# ignore data & result of wqm_src
+﻿# ignore data & result of wqm_src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -23,6 +23,18 @@ dn_src/**/txt
 dn_src/**/*.xls
 yiner_src/ts_videos
 yiner_src/wav_audios
+yiner_src/wav_audios1
+yiner_src/words_result
+wza_src/**/.idea
+wza_src/**/ckpt
+wza_src/**/result
+wza_src/**/data
+wza_src/**/corpus
+wza_src/CutNews/data
+
+# all .DS_Store
+.DS_Store
+*/**/.DS_Store
 
 # ignore settings
 **/.idea/
@@ -134,3 +146,9 @@ venv.bak/
 .mypy_cache/
 dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
 *.rar
+wza_src/ChineseNER/wiki_100.utf8
+*.png
+wza_src/YEDDA-new/demotext
+wza_src/YEDDA-new/shipintest
+wza_src/YEDDA-new/tex2pdf
+*.gitkeep

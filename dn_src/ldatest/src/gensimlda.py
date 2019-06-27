@@ -42,8 +42,10 @@ if __name__ == '__main__':
     # 语料导入
     # 模型的保存和加载
 
+
     # 对新文档预测
     testdoc = []
+
     with open('../txt/topic_doc_pk/topic0/topic0_doc978.txt', 'r', encoding='utf-8') as f:
         for line in f.readlines():
             linewords = line.split()

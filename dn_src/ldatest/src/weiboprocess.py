@@ -1,75 +1,43 @@
-import os
 import csv
 
 import jieba
 
-''' 保存为txt文件'''
+''' 保存为txt文件：提取出指定话题的新闻信息的分词结果'''
 
 
-def readdirFile(readfilepath, writefile, topicid):
-    with open(readfilepath, 'r', encoding='utf-8-sig') as fr:
+def read_dir_file(readfile, writefile, topic_id):
+    with open(readfile, 'r', encoding='utf-8-sig') as fr:
         rows = csv.DictReader(fr)
         # out = open(writefile, 'w', newline='', encoding='utf-8')
         # csv_writer = csv.writer(out, dialect='excel')
         out = open(writefile, 'w', encoding='utf-8')
         for row in rows:
-            if row['topicid'] == str(topicid):
-                weiboContent = row['content']
+            if row['topicid'] == str(topic_id):
+                weibo_content = row['content']
                 import re
-                # 每一条微博内容
-                res = re.sub('[０-９]', '', weiboContent)
+                # 去掉数字：将0-9替换为‘’
+                res = re.sub('[０-９]', '', weibo_content)
                 # 微博内容的分词结果
-                rowList = [eachWord for eachWord in jieba.cut(res)]  # 分词
-                wordList = []
+                row_list = [eachWord for eachWord in jieba.cut(res)]  # 分词
                 # 每条微博内容去掉停用词后的结果
-                removeStopWordList = []
+                word_list = []
                 '''停用词处理'''
-                stopWords = open('../corpus/stopwords-utf8.txt', 'r', encoding='utf-8').read()
-                for eachWord in rowList:
-                    if eachWord not in stopWords and eachWord != '\t' and eachWord != ' ':
-                        removeStopWordList.append(eachWord)
-                wordList.append(removeStopWordList)
+                stop_words = open('../corpus/stopwords-utf8.txt', 'r', encoding='utf-8').read()
+                for each_word in row_list:
+                    if each_word not in stop_words and each_word != '\t' and each_word != ' ':
+                        word_list.append(each_word)
                 # 将处理后的内容去掉制表符写入新文件
                 line = ''
-                for word in wordList:
-                    for i in range(len(word)):
-                        if word[i].encode('utf-8') == '\n' or word[i].encode('utf-8') == 'nbsp' or word[i].encode(
-                                'utf-8') == '\r\n':
-                            continue
-                        line += word[i]
-                        line += ' '
-                    # csv_writer.writerow(word)
-                    out.write(line)
-                    out.write('\n')
-
-
-''' 保存为csv文件'''
-
-
-def readfiletocsv(readfilepath, writefile):
-    with open(readfilepath, 'r', encoding='utf-8') as fr:
-        rows = csv.DictReader(fr)
-        out = open(writefile, 'w', newline='', encoding='utf-8')
-        csv_writer = csv.writer(out, dialect='excel')
-        for row in rows:
-            if row['topicid'] == '4':
-                weibocontent = row['content']
-                import re
-                res = re.sub('[０-９]', '', weibocontent)
-                rowList = [eachWord for eachWord in jieba.cut(res)]  # 分词
-                wordList = []
-                removeStopwordList = []
-                '''停用词处理'''
-                stopWords = open('../corpus/stopwords-utf8.txt', 'r', encoding='utf-8').read()
-                for eachword in rowList:
-                    if eachword not in stopWords and eachword != '\t' and eachword != ' ':
-                        removeStopwordList.append(eachword)
-                wordList.append(removeStopwordList)
-                line = ''
-                for word in wordList:
-                    csv_writer.writerow(word)
+                for index in range(len(word_list)):
+                    if word_list[index].encode('utf-8') == '\n' or word_list[index].encode('utf-8') == 'nbsp' or \
+                            word_list[index].encode('utf-8') == '\r\n':
+                        continue
+                    line += word_list[index]
+                    line += ' '
+                out.write(line)
+                out.write('\n')
 
 
 if __name__ == '__main__':
     for i in range(106):
-        readdirFile('../csv/testcsv/weiboshipin.csv', '../txt/weibo/weiboshipin_topic' + str(i) + '.txt', i)
+        read_dir_file('../csv/testcsv/weiboshipin.csv', '../txt/weibo/weiboshipin_topic' + str(i) + '.txt', i)
