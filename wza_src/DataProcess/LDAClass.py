@@ -21,7 +21,7 @@ class LDAClass:
         with open(filepath, 'r', encoding='UTF-8') as file:
             for line in file.readlines():
                 self.corpus.append(line.strip())
-        print(self.corpus)
+        # print(self.corpus)
 
     '''打印lda主题词'''
 
