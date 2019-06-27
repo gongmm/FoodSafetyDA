@@ -146,16 +146,12 @@ class LDAClass:
         lda_model.fit(weight)
         joblib.dump(lda_model, 'result/model.lda')
 
-        # 输出前20个主题词
-        n = 20
-        self.get_topic_word(n)
-
 
 if __name__ == '__main__':
     lda_class = LDAClass()
     # 训练LDA模型
-    # lda_class.train()
+    lda_class.train()
     # 获得话题的对应特征词
     lda_class.get_topic_word(20)
     # 在新闻文档中添加话题标签
-    lda_class.save_topic('data/foodInfo.csv', 'data/foodInfo_topic.csv')
+    # lda_class.save_topic('data/foodInfo.csv', 'data/foodInfo_topic.csv')
