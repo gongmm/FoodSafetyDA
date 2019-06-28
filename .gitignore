@@ -1,4 +1,4 @@
-# ignore data & result of wqm_src
+﻿# ignore data & result of wqm_src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -23,8 +23,9 @@ dn_src/**/txt
 dn_src/**/*.xls
 yiner_src/ts_videos
 yiner_src/wav_audios
-yiner_src/wav_audios1
 yiner_src/words_result
+yiner_src/csv
+
 wza_src/**/.idea
 wza_src/**/ckpt
 wza_src/**/result
