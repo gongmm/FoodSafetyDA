@@ -21,7 +21,7 @@ class LDAClass:
         with open(filepath, 'r', encoding='UTF-8') as file:
             for line in file.readlines():
                 self.corpus.append(line.strip())
-        print(self.corpus)
+        # print(self.corpus)
 
     '''打印lda主题词'''
 
@@ -72,7 +72,9 @@ class LDAClass:
 
     ''' 将每篇doc对应的topic存储'''
 
-    def save_topic(self, lda_model, readfile, writefile):
+    @staticmethod
+    def save_topic(readfile, writefile):
+        lda_model = joblib.load('result/model.lda')
         # 文档-主题分布 doc_topic
         doc_topic = lda_model.doc_topic_
 
@@ -107,65 +109,49 @@ class LDAClass:
 
     '''将topic存入单独的csv文件'''
 
-    def get_topic_word(self, topic_word, word):
-
+    @staticmethod
+    def get_topic_word(top_n):
+        lda_model = joblib.load('result/model.lda')
+        # 主题-词分布
+        topic_word = lda_model.topic_word_
+        word = joblib.load('result/model.word')
         with open('result/food_topic.csv', 'w', encoding='utf-8', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(['topicid', 'topic'])
             for i, topic_dist in enumerate(topic_word):
-                topic_words = np.array(word)[np.argsort(topic_dist)][:-(n + 1):-1]
+                topic_words = np.array(word)[np.argsort(topic_dist)][:-(top_n + 1):-1]
                 csv_writer.writerow([i, ' '.join(topic_words)])
                 print(u'*Topic {}\n- {}'.format(i, ' '.join(topic_words)))
 
-    """lda test"""
+    """lda train"""
 
-    def lda_food_test(self):
+    def train(self):
         # 读取文件，生成语料
         print("======生成语料=====")
         self.get_corpus(self, 'corpus/food_news_corpus.txt')
 
         print("======向量转化=====")
         vectorizer = CountVectorizer()
-        X = vectorizer.fit_transform(self.corpus)
-        # transformer=TfidfTransformer()
-        # tfidf=transformer.fit_transform(X)
+        x = vectorizer.fit_transform(self.corpus)
 
         # 获取词袋模型中所有特征词，关键词
         word = vectorizer.get_feature_names()
+        joblib.dump(word, 'result/model.word')
         # 词频矩阵，行为文档中的行，列为各个特征词
-        weight = X.toarray()
-        # tfidf_weight=tfidf.toarray()#tf-idf矩阵
+        weight = x.toarray()
         print("======开始lda=====")
-        # print (tfidf_weight)
-        # 打印特征词
-        # for j in range(len(word)):
-        #     print (word[j],)
 
         '''LDA模型调用'''
         lda_model = lda.LDA(n_topics=106, n_iter=1000, random_state=1)
         lda_model.fit(weight)
         joblib.dump(lda_model, 'result/model.lda')
-        # lda_model = joblib.load('result/model.lda')
-        # 主题-词分布
-        topic_word = lda_model.topic_word_
-        n = 20  # 输出前20个主题词
-        self.get_topic_word(topic_word, word)
-
-        self.save_topic(lda_model, '../csv/testcsv/shipinprocess.csv', '../csv/testcsv/shipinprocess_new.csv')
-
-
-def model_test():
-    lda_model = joblib.load('result/model.lda')
-    # 主题-词分布
-    topic_word = lda_model.topic_word_
-    n = 20  # 输出前20个主题词
 
 
 if __name__ == '__main__':
     lda_class = LDAClass()
-
-    lda_class.lda_food_test()
-    # model_test()
-    # from numpy import random
-
-    # doc_topic = random.random(size=(10890, 81))
+    # 训练LDA模型
+    lda_class.train()
+    # 获得话题的对应特征词
+    lda_class.get_topic_word(20)
+    # 在新闻文档中添加话题标签
+    # lda_class.save_topic('data/foodInfo.csv', 'data/foodInfo_topic.csv')

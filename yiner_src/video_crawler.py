@@ -142,7 +142,7 @@ class cctv_spider():
                 os.makedirs(self.title)
             elif '0.ts' in os.listdir(self.title):
                 print('已下载ts文件')
-                self.ts_to_mp4()
+                self.ts_to_wav()
                 return
 
             # 得到m3u8地址
@@ -206,7 +206,7 @@ class cctv_spider():
         print(self.ts_lists)
         print('信息提取完成......\n准备下载...')
         self.pool()
-        self.ts_to_mp4()
+        self.ts_to_wav()
 
     def pool(self):
         print('经计算需要下载%d个文件' % len(self.ts_lists))
@@ -238,7 +238,7 @@ class cctv_spider():
                 c = -1
             return int(c)
 
-    def ts_to_mp4(self):
+    def ts_to_wav(self):
         # 检测是否已存在wav文件
         video_dir = os.path.split(self.title)[-1]
         filename = os.path.join(dir_name, video_dir + '.wav')
