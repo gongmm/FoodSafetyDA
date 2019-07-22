@@ -25,6 +25,9 @@ yiner_src/ts_videos
 yiner_src/wav_audios
 yiner_src/words_result
 yiner_src/csv
+yiner_src/crawler/**/*.txt
+yiner_src/crawler/**/*.csv
+yiner_src/crawler/**/*.mp4
 
 wza_src/**/.idea
 wza_src/**/ckpt
@@ -32,6 +35,9 @@ wza_src/**/result
 wza_src/**/data
 wza_src/**/corpus
 wza_src/CutNews/data
+wza_src/crawler/**/*.txt
+wza_src/crawler/**/*.csv
+wza_src/crawler/**/*.json
 
 # all .DS_Store
 .DS_Store
