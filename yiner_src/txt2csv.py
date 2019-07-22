@@ -17,7 +17,7 @@ def txt2csv(src_dir, des_dir, csv_name):
 
     for txt in txt_list:
         path = os.path.join(src_dir, txt)
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='gbk') as f:
             content = f.read()
         row = [txt[:-4], content]
         rows.append(row)
@@ -28,13 +28,14 @@ def txt2csv(src_dir, des_dir, csv_name):
     if des_dir not in os.listdir():
         os.mkdir(des_dir)
     path = os.path.join(des_dir, csv_name)
-    with open(path, 'w') as f:
-        f_csv = csv_writer(f)
+    with open(path, 'w', encoding='utf-8') as f:
+        f_csv = csv.writer(f)
         f_csv.writerow(headers)
         f_csv.writerows(rows)
+    print('转换成功！')
 
 if __name__ == '__main__':
-    src_dir = 'words_result/'
-    des_dir = 'csv/'
+    src_dir = 'words_result'
+    des_dir = 'csv'
     csv_name = 'cctv_news.csv'
     txt2csv(src_dir, des_dir, csv_name)

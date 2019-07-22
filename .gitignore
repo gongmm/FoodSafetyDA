@@ -1,4 +1,4 @@
-# ignore data & result of wqm_src
+﻿# ignore data & result of wqm_src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -23,14 +23,22 @@ dn_src/**/txt
 dn_src/**/*.xls
 yiner_src/ts_videos
 yiner_src/wav_audios
-yiner_src/wav_audios1
 yiner_src/words_result
+yiner_src/csv
+yiner_src/crawler/**/*.txt
+yiner_src/crawler/**/*.csv
+yiner_src/crawler/**/*.mp4
+
 wza_src/**/.idea
 wza_src/**/ckpt
 wza_src/**/result
 wza_src/**/data
 wza_src/**/corpus
 wza_src/CutNews/data
+wza_src/crawler/**/*.txt
+wza_src/crawler/**/*.csv
+wza_src/crawler/**/*.json
+wza_src/crawler/**/*.png
 
 # all .DS_Store
 .DS_Store
