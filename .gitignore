@@ -38,6 +38,7 @@ wza_src/CutNews/data
 wza_src/crawler/**/*.txt
 wza_src/crawler/**/*.csv
 wza_src/crawler/**/*.json
+wza_src/crawler/**/*.png
 
 # all .DS_Store
 .DS_Store
