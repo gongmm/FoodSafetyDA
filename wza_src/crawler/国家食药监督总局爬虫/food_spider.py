@@ -83,15 +83,19 @@ base_url = "http://samr.cfda.gov.cn/WS01"
 src_url = base_url + "/CL1972/index.html"
 
 
+# src_url = base_url + "/CL1747/index.html"
+
+
 def get_url(url, last_href):
     browser.get(url)
     time.sleep(3)
     html_doc = browser.page_source
 
     soup = BeautifulSoup(html_doc, 'html.parser', from_encoding='utf-8')
+    # 获得该页中所有的新闻项目
     td_elements = soup.find_all('td', class_="ListColumnClass15")
     info_list = []
-
+    # 下一页地址
     next_href = soup.find('td', class_="pageTdE15").find('a').get('href')
 
     for item in td_elements:
@@ -103,32 +107,33 @@ def get_url(url, last_href):
 
         # link = browser.find_element_by_link_text(info['title'])
         # link.click()
+        # 打开浏览器模拟
         browser.get(info['href'])
         time.sleep(3)
         new_html_doc = browser.page_source
         # print(new_html_doc)
         # print(new_html_doc.decode("utf8","ignore").encode("gbk","ignore"))
         soup2 = BeautifulSoup(str(new_html_doc), 'html.parser', from_encoding='utf-8')
-
+        # 获取新闻内容信息
         temp = soup2.find('td', class_='articlecontent3')
         if temp:
             # 消除html中特殊的转义字符
             content = temp.getText()
             info['content'] = "".join(content.split())
-        #print(type(content))
-        #print(content)
+        # print(type(content))
+        # print(content)
         else:
             info['content'] = ''
         browser.back()
         info_list.append(info)
 
-    write2csv(info_list, "xuanchuanzhengzhi.csv")
+    write2csv(info_list, "宣传整治.csv")
     if next_href != last_href:
         next_page_src = src_url[:src_url.rfind('/') + 1] + next_href
         print(next_page_src)
         # go_next_page()
-        time.sleep(3)
-        #print(next_page_src)
+        time.sleep(1)
+        # print(next_page_src)
         get_url(next_page_src, next_href)
 
 
@@ -140,11 +145,11 @@ def go_next_page():
 
 
 def write2csv(info_list, out_file):
-    with open(out_file, 'a', newline='',encoding='utf-8') as f:
+    with open(out_file, 'a', newline='', encoding='utf-8') as f:
         w = csv.writer(f)
         fields = info_list[0].keys()  #
         fields = sorted(list(fields))
-        #print(info_list)
+        # print(info_list)
         # w.writerow(fields)
         for item in info_list:
             w.writerow([item[field] for field in fields])
