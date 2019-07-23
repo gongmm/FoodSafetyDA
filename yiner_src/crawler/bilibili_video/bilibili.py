@@ -10,7 +10,6 @@ import csv
 import hashlib
 from requests.cookies import RequestsCookieJar
 from urllib import error
-from pymongo import MongoClient
 
 UA_LIST = [
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
@@ -98,19 +97,17 @@ def get_video_info(aid):
     html.encoding = 'utf-8'  # 解决中文乱码
     soup = BeautifulSoup(html.text, 'lxml')
     title = soup.find('meta', attrs={'itemprop': 'description'}).get('content')
-    author = soup.find('meta', attrs={'itemprop': 'author'}).get('content')
     pubdate = soup.find('meta', attrs={'itemprop': 'datePublished'}).get('content')
     comment = soup.find('meta', attrs={'itemprop': 'commentCount'}).get('content')
     source_url = get_source_url(target_url)
     video_info = dict()
+    video_info['aid'] = aid
     video_info['title'] = title
-    video_info['author'] = author
     video_info['pubdate'] = pubdate
     video_info['video_url'] = video_url
     video_info['source_url'] = source_url
-    video_info['aid'] = aid
-    video_info['comment'] = comment
-
+    video_info['commentCount'] = comment
+    
     # 添加like和collect数据
     json_html = requests.get(json_url, headers = headers)
     json_result = json_html.text
@@ -146,16 +143,16 @@ def get_source_url(url):
     return None
 
 
-def spider_bili(dirname, begin, end):
+def spider_bili(dirname, des_dir, csv_name, begin, end):
     """
-    爬取哔哩哔哩视频，下载视频并将视频信息存入数据库
+    爬取哔哩哔哩视频，下载视频并将视频信息存入csv
     :param begin: 起始页码
     :param end: 终止页码
     :return:
     """
-    conn = MongoClient('127.0.0.1', 27017)
-    db = conn.bilibili  # 连接mydb数据库，没有则自动创建
-    my_set = db.videoinfo  # 使用newspeople集合，没有则自动创建
+
+    rows = []
+    headers = ['aid', 'title', 'pubdate', 'video_url', 'source_url', 'commentCount', 'like', 'collect']
 
     for index in range(begin, end+1):    #遍历页数
         print('开始爬取第' + str(index) + '页视频')
@@ -165,8 +162,18 @@ def spider_bili(dirname, begin, end):
             video_info = get_video_info(aid)    #获取视频信息
             if '2018' not in video_info['pubdate']:
                 continue
-            my_set.insert(video_info)   #插入数据库
+            row = list(video_info.values())
+            rows.append(row)
             download_video(dirname, aid, video_info['source_url']) #下载视频
+
+    if des_dir not in os.listdir():
+        os.mkdir(des_dir)
+    path = os.path.join(des_dir, csv_name)
+    with open(path, 'w', encoding='utf-8') as f:
+        f_csv = csv.writer(f)
+        f_csv.writerow(headers)
+        f_csv.writerows(rows)
+    print('转换成功！')
 
 
 def download_video(target_directory, aid, url):
@@ -204,6 +211,8 @@ def download_video(target_directory, aid, url):
 
 
 if __name__ == '__main__':
-    spider_bili('mp4_videos', 1, 50)
+    des_dir = 'csv'
+    csv_name = 'bilibili_videos.csv'
+    spider_bili('mp4_videos', des_dir, csv_name, 1, 50)
    
     

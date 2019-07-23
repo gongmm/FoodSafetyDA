@@ -56,7 +56,7 @@ UA_LIST = [
 base_dir = 'ts_videos'
 dir_name = 'wav_audios'
 # working_path = '/Users/yiner/Desktop/lab-exp/FoodSafetyDA/yiner_src'
-working_path = 'D:/FoodSafetyDA/yiner_src'
+# working_path = 'D:/FoodSafetyDA/yiner_src'
 page_url_head = 'https://search.cctv.com/ifsearch.php?page='
 page_url_tail = '&qtext=食品&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=1&channel=不限&pageflag=0&qtext_str=食品'
 
@@ -85,7 +85,9 @@ class cctv_spider():
             # 解析网页
             self.parse_json(json_data)
             if not self.totalpage == 0:
-                for i in range(100, self.totalpage+1):
+                if totalpage > 50:  # 50页后为重复内容
+                    totalpage = 50
+                for i in range(1, self.totalpage):
                     print(i)
                     self.url = page_url_head + str(i) + page_url_tail
                     time.sleep(1)
@@ -269,7 +271,6 @@ class cctv_spider():
             print('转换完成')
             #shutil.rmtree(self.title)
         
-
     def save_ts(self, ts_list):
         try:
             ts_urls = self.ts_url + '/{}'.format(ts_list)
@@ -284,9 +285,10 @@ class cctv_spider():
 
 if __name__ == '__main__':
     # 工作目录设为yiner_src
-    pwd = os.getcwd()
-    if not pwd == working_path:
-        os.chdir(working_path)
-    print(os.getcwd())
+    # pwd = os.getcwd()
+    # if not pwd == working_path:
+    #     os.chdir(working_path)
+    # print(os.getcwd())
+    
     # 开始爬虫
     cctv_spider()
