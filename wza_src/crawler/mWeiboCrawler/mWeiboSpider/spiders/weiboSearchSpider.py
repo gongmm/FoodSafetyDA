@@ -44,6 +44,7 @@ class WeiBoSpider(scrapy.Spider):
         #                       meta={'keyword':keyword,'topic_id':topic_id})
 
         keyword = '海鲜 小龙虾 武汉'
+        keyword = '猪肉'
         topic_id = 46
         yield Request(url=self.get_url(keyword), callback=self.parse, headers=self.headers,
                       meta={'keyword': keyword, 'topic_id': topic_id})
@@ -65,15 +66,21 @@ class WeiBoSpider(scrapy.Spider):
                                 item['time'] = card['mblog']['created_at']
                                 # 获得微博内容
                                 if card.get('mblog').get('longText'):
-                                    item['content'] = card['mblog']['longText']['longTextContent']
-                                    # print(card['mblog']['longText']['longTextContent'])
+                                    content = card['mblog']['longText']['longTextContent']
+                                    item['content'] = content.strip()
                                 elif card.get('mblog').get('text'):
-                                    item['content'] = PyQuery(card['mblog']['text']).text()
-                                    # print(PyQuery(card['mblog']['text']).text())
+                                    content = PyQuery(card['mblog']['text']).text()
+                                    item['content'] = content.strip()
                                 # 获得话题 id
                                 item['topic_id'] = topic_id
                                 # 获得关键词
                                 item['topic'] = keyword
+                                # 获得转发数
+                                item['reposts_count'] = card['mblog']['reposts_count']
+                                # 获得评论数
+                                item['comments_count'] = card['mblog']['comments_count']
+                                # 获得点赞数
+                                item['attitudes_count'] = card['mblog']['attitudes_count']
                                 yield item
                     else:
                         if cards.get('mblog'):
@@ -86,6 +93,12 @@ class WeiBoSpider(scrapy.Spider):
                                 item['content'] = PyQuery(cards['mblog']['text']).text()
                             item['topic_id'] = topic_id
                             item['topic'] = keyword
+                            # 获得转发数
+                            item['reposts_count'] = cards['mblog']['reposts_count']
+                            # 获得评论数
+                            item['comments_count'] = cards['mblog']['comments_count']
+                            # 获得点赞数
+                            item['attitudes_count'] = cards['mblog']['attitudes_count']
                             yield item
         else:
             # 停止爬取下一页

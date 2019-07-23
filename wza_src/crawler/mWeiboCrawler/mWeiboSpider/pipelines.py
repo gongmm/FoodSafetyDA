@@ -12,12 +12,13 @@ from openpyxl import Workbook
 class MWeiBoSpiderPipeline(object):
     wb = Workbook()
     ws = wb.active
-    ws.append(['time', 'content', 'topic_id', 'topic'])
+    ws.append(['time', 'content', 'topic_id', 'topic', 'reposts_count', 'comments_count', 'attitudes_count'])
 
     def process_item(self, item, spider):  # 工序具体内容
         if isinstance(item, WeiBoSpiderItem):
             # 导出表格操作
-            line = [item['time'], item['content'], item['topic_id'], item['topic']]  # 把数据每一行整理出来
+            line = [item['time'], item['content'], item['topic_id'], item['topic'], item['reposts_count'],
+                    item['comments_count'], item['attitudes_count']]  # 把数据每一行整理出来
             self.ws.append(line)  # 将数据一行的形式添加到xlsx中
             self.wb.save('weibo.xlsx')  # 保存xlsx文件
             return item

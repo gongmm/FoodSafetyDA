@@ -15,4 +15,7 @@ class WeiBoSpiderItem(scrapy.Item):
     topic_id = scrapy.Field()
     content = scrapy.Field()
     time = scrapy.Field()
+    reposts_count = scrapy.Field()  # 转发数
+    comments_count = scrapy.Field()  # 评论数
+    attitudes_count = scrapy.Field()  # 点赞数
     pass
