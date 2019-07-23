@@ -1,4 +1,7 @@
-from scrapy import cmdline
+from scrapy.crawler import CrawlerProcess
+from scrapy.utils.project import get_project_settings
 
-cmdline.execute(['scrapy', 'crawl', 'weibo'])
-# cmdline.execute(['scrapy', 'crawl', 'foodmate_search'])
+if __name__ == "__main__":
+    process = CrawlerProcess(get_project_settings())
+    process.crawl('weibo')
+    process.start()
