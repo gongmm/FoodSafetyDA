@@ -8,11 +8,11 @@
 import scrapy
 
 
-class weibospiderItem(scrapy.Item):
+class WeiBoSpiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     topic = scrapy.Field()
-    topicid = scrapy.Field()
+    topic_id = scrapy.Field()
     content = scrapy.Field()
-    time=scrapy.Field()
+    time = scrapy.Field()
     pass
