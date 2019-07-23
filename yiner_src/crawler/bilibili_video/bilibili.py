@@ -72,7 +72,8 @@ def get_av_list(index):
     :param index:
     :return:
     """
-    root_url = 'https://search.bilibili.com/all?keyword=食品安全&from_source=banner_search&spm_id_from=333.334.b_62616e6e65725f6c696e6b.1&page='
+    # duration=1 表示取时长在10分钟以下的
+    root_url = 'https://search.bilibili.com/all?keyword=食品安全&from_source=banner_search&duration=1&spm_id_from=333.334.b_62616e6e65725f6c696e6b.1&page='
     page_url = root_url+str(index)
     html = requests.get(page_url,headers = headers)
     html.encoding = 'utf-8'  # 解决中文乱码
@@ -89,15 +90,17 @@ def get_video_info(aid):
     :param aid: av号
     :return:
     """
-    video_url = 'https://www.bilibili.com/video/av'+str(aid)    #视频链接
-    target_url = "http://api.bilibili.com/playurl?callback=callbackfunction&aid=" + str(aid) + "&page=1&platform=html5&quality=1&vtype=mp4" #json链接
+    video_url = 'https://www.bilibili.com/video/av'+str(aid)  # 视频链接
+    target_url = "http://api.bilibili.com/playurl?callback=callbackfunction&aid=" + str(aid) + "&page=1&platform=html5&quality=1&vtype=mp4"  # json链接
+    json_url = 'https://api.bilibili.com/x/web-interface/view?aid=' + str(aid)
 
-    html = requests.get(video_url,headers = headers)
+    html = requests.get(video_url, headers = headers)
     html.encoding = 'utf-8'  # 解决中文乱码
     soup = BeautifulSoup(html.text, 'lxml')
     title = soup.find('meta', attrs={'itemprop': 'description'}).get('content')
     author = soup.find('meta', attrs={'itemprop': 'author'}).get('content')
     pubdate = soup.find('meta', attrs={'itemprop': 'datePublished'}).get('content')
+    comment = soup.find('meta', attrs={'itemprop': 'commentCount'}).get('content')
     source_url = get_source_url(target_url)
     video_info = dict()
     video_info['title'] = title
@@ -106,6 +109,18 @@ def get_video_info(aid):
     video_info['video_url'] = video_url
     video_info['source_url'] = source_url
     video_info['aid'] = aid
+    video_info['comment'] = comment
+
+    # 添加like和collect数据
+    json_html = requests.get(json_url, headers = headers)
+    json_result = json_html.text
+    json_obj = json.loads(json_result)
+    if json_obj:
+        data = json_obj.get('data')
+        stat = data.get('stat')
+        video_info['like'] = stat.get('like')
+        video_info['collect'] = stat.get('favorite')
+
     print(video_info)
     return video_info
 
@@ -131,7 +146,7 @@ def get_source_url(url):
     return None
 
 
-def spider_bili(dirname,begin,end):
+def spider_bili(dirname, begin, end):
     """
     爬取哔哩哔哩视频，下载视频并将视频信息存入数据库
     :param begin: 起始页码
@@ -142,17 +157,19 @@ def spider_bili(dirname,begin,end):
     db = conn.bilibili  # 连接mydb数据库，没有则自动创建
     my_set = db.videoinfo  # 使用newspeople集合，没有则自动创建
 
-    for index in range(begin,end+1):    #遍历页数
-        print('开始爬取第'+str(index)+'页视频')
+    for index in range(begin, end+1):    #遍历页数
+        print('开始爬取第' + str(index) + '页视频')
         av_list = get_av_list(index)
         for aid in av_list: #遍历av_list
             #print(aid)
             video_info = get_video_info(aid)    #获取视频信息
+            if '2018' not in video_info['pubdate']:
+                continue
             my_set.insert(video_info)   #插入数据库
-            download_video(dirname,aid,video_info['source_url']) #下载视频
+            download_video(dirname, aid, video_info['source_url']) #下载视频
 
 
-def download_video(target_directory, aid ,url):
+def download_video(target_directory, aid, url):
     """
     下载视频
     :param target_directory: 存储视频的文件夹
@@ -187,6 +204,6 @@ def download_video(target_directory, aid ,url):
 
 
 if __name__ == '__main__':
-    spider_bili('爬虫/哔哩哔哩爬虫/bilibili',1,1)
+    spider_bili('mp4_videos', 1, 50)
    
     
