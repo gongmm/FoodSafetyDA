@@ -14,6 +14,7 @@ from pyquery import PyQuery as pq
 from multiprocessing import Pool
 import random
 import time
+import csv
 
 UA_LIST = [
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
@@ -60,6 +61,9 @@ dir_name = 'wav_audios'
 page_url_head = 'https://search.cctv.com/ifsearch.php?page='
 page_url_tail = '&qtext=食品&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=1&channel=不限&pageflag=0&qtext_str=食品'
 
+des_dir = 'csv'
+csv_name = 'cctv_videos.csv'
+
 class cctv_spider():
     def __init__(self):
         # 设置User Agent模拟浏览器访问
@@ -79,21 +83,41 @@ class cctv_spider():
         # ts文件列表
         self.ts_lists = []
 
+        # csv文件的行
+        self.rows = []
+
         # 调用网页获取
         json_data = self.get_page(self.url)
         if json_data:
             # 解析网页
             self.parse_json(json_data)
             if not self.totalpage == 0:
-                if totalpage > 50:  # 50页后为重复内容
-                    totalpage = 50
+                if self.totalpage > 50:  # 50页后为重复内容
+                    self.totalpage = 50
                 for i in range(1, self.totalpage):
                     print(i)
                     self.url = page_url_head + str(i) + page_url_tail
                     time.sleep(1)
                     json_data = self.get_page(self.url)
                     self.parse_json(json_data)
+                    for key, dic in self.video_dict.items():
+                        row = []
+                        row.append(key)
+                        for value in dic.values():
+                            row.append(value)
+                        self.rows.append(row)
                     self.video_dict = {}
+
+        headers = ['videoId', 'title', 'pubdate', 'video_url', 'm3u8_url']
+
+        if des_dir not in os.listdir():
+            os.mkdir(des_dir)
+        path = os.path.join(des_dir, csv_name)
+        with open(path, 'w', encoding='utf-8') as f:
+            f_csv = csv.writer(f)
+            f_csv.writerow(headers)
+            f_csv.writerows(rows)
+        print('转换成功！')
 
     def get_page(self, url):
         try:
@@ -123,9 +147,14 @@ class cctv_spider():
                     continue
                 if item.get('durations') >= 180:
                     continue
+                if '2018' not in item.get('uploadtime'):
+                    continue
                 title = item.get('all_title')
                 title = title.split(']')[-1]
-                self.video_dict[title] = item.get('urllink')
+                # 信息存入字典
+                self.video_dict[title] = {}
+                self.video_dict[title]['video_url'] = item.get('urllink')
+                self.video_dict[title]['uploadtime'] = item.get('uploadtime')
         print(self.video_dict)
         print('解析完成，获取视频列表')
         self.get_m3u8()
@@ -133,7 +162,6 @@ class cctv_spider():
     def get_m3u8(self):
         # 所有视频文件都下载
         for key in self.video_dict:
-            #
             video_dir = ''.join(key.split()) # 去掉字符串中间的空格
             self.title = os.path.join(base_dir, video_dir) 
             if base_dir not in os.listdir():
@@ -148,7 +176,7 @@ class cctv_spider():
                 return
 
             # 得到m3u8地址
-            html = self.get_page(self.video_dict.get(key))
+            html = self.get_page(self.video_dict[key]['video_url'])
             if html:
                 # 获取videoCenterId
                 doc = pq(html)
@@ -162,12 +190,17 @@ class cctv_spider():
                     print ('videoCenterId ' + videoCenterId)
 
                     self.m3u8_url = 'http://asp.cntv.kcdnvip.com/asp/hls/1200/0303000a/3/default/' + videoCenterId + '/1200.m3u8'
+                    # 信息存入字典
+                    self.video_dict[key]['videoId'] = videoCenterId
+                    self.video_dict[key]['m3u8_url'] = self.m3u8_url
+
                     try:
                         response = requests.get(self.m3u8_url, headers=self.header)
                         html = response.text
                         print('获取m3u8文件成功，准备下载文件')
 
-                        self.parse_ts(html)
+                        #self.parse_ts(html)
+
                     except Exception as err:
                         print(err)
                         print('缓存文件请求错误，请检查错误')
