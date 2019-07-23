@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from openpyxl import Workbook
+from pymongo import MongoClient
 
 # Define your item pipelines here
 #
@@ -43,12 +44,14 @@ class FoodMateJsonPipeline(object):
             file.close()
             return item
 
-# class FoodMateDatabasePipeline(object):
-#     def open_spider(self, spider):
-#         self.conn = MongoClient(host='127.0.0.1', port=27017)
-#         self.client = self.conn.news.foodmate
-#
-#     def process_item(self, item, spider):
-#         if isinstance(item, ShipinItem):
-#             self.client.insert(dict(item))
-#             return item
+
+class FoodMateDatabasePipeline(object):
+    def open_spider(self, spider):
+        self.conn = MongoClient(host='127.0.0.1', port=27017)
+        self.client = self.conn.news.foodmate
+
+    def process_item(self, item, spider):
+        if isinstance(item, FoodMateItem):
+            self.client.update({'link': item['link']}, {'$set': dict(item)}, True)
+            # self.client.insert(dict(item))
+            return item

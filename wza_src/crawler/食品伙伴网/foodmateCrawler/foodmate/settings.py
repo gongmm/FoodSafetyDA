@@ -63,7 +63,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'foodmate.pipelines.FoodMatePipeline': 300,
+    'foodmate.pipelines.FoodMateDatabasePipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
