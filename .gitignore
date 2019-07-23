@@ -39,6 +39,8 @@ wza_src/crawler/**/*.txt
 wza_src/crawler/**/*.csv
 wza_src/crawler/**/*.json
 wza_src/crawler/**/*.png
+wza_src/crawler/**/*.xlsx
+wza_src/crawler/**/*.json
 
 # all .DS_Store
 .DS_Store
