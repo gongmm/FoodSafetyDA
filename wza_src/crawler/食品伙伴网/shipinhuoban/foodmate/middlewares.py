@@ -7,7 +7,7 @@
 
 from scrapy import signals
 import random
-from shipin.settings import user_agents
+from foodmate.settings import user_agents
 
 class ShipinSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,

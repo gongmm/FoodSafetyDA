@@ -8,7 +8,7 @@
 import scrapy
 
 
-class ShipinItem(scrapy.Item):
+class FoodMateItem(scrapy.Item):
     time = scrapy.Field()
     link = scrapy.Field()
     title = scrapy.Field()
