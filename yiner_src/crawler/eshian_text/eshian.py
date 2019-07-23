@@ -7,7 +7,10 @@ from lxml import etree
 import tqdm
 import os
 import csv
-from pymongo import MongoClient
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
 
 UA_LIST = [
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
@@ -46,6 +49,7 @@ UA_LIST = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24",
     "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24"
 ]
+
 headers1 = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate, sdch',
@@ -55,26 +59,13 @@ headers1 = {
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': random.choice(UA_LIST)
 }
-headers2 = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Accept-Encoding': 'gzip, deflate, sdch',
-    'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6',
-    'Cache-Control': 'max-age=0',
-    'Proxy-Connection': 'keep-alive',
-    'Referer': 'http://www.ximalaya.com/dq/all/2',
-    'Upgrade-Insecure-Requests': '1',
-    'User-Agent': random.choice(UA_LIST)
-}
 
 base_url = "http://www.eshian.com"
 download_baseurl = "http://www.eshian.com/sat/standard/standardinfodown/"
 
-url_begin = "http://www.eshian.com/sat/standard/standardlist/0?info=&pageNo="
-url_end="&type=8&standardStatus=8"
-
-conn = MongoClient('127.0.0.1', 27017)
-db = conn.shiantong  # 连接mydb数据库，没有则自动创建
-my_set = db.newsinfo  # 使用newspeople集合，没有则自动创建
+page_url = 'http://www.eshian.com/sat/foodinformation/hync/articlelist/17/453/1'
+chrome_driver = '/Users/yiner/anaconda3/lib/python3.6/site-packages/selenium/webdriver/chrome/chromedriver'
+browser = webdriver.Chrome(executable_path=chrome_driver)
 
 def get_item_url(pagenum):
     """
@@ -82,52 +73,76 @@ def get_item_url(pagenum):
     :param pagenum:
     :return:
     """
-    from_url = url_begin+str(pagenum)+url_end   #爬取的页面url
-    html = requests.get(from_url, headers=headers1)
-    url_list = []
-    soup = BeautifulSoup(html.text, 'lxml')
-    for item in soup.find_all(class_="text-default"):
-        href = item.find('a').get('href')
-        #print(href)
-        url_list.append(base_url + href)
-    return url_list
+    page_html = browser.get(page_url)
+    input_str = browser.find_element_by_id('_paging_ingput_value_')
+    input_str.clear()
+    input_str.send_keys(pagenum)
+    time.sleep(0.5)
+    button = browser.find_element_by_id('gotoPage')
+    button.click()
+    
+    try:
+        #最多等待10秒
+        locator = (By.ID, '_paging_ingput_value_')
+        WebDriverWait(browser, 10).until(
+            expected_conditions.visibility_of_element_located(locator))
+
+        date = browser.find_elements_by_css_selector('span.pull-right').pop(-1).text
+        if '2018' not in date:
+            return []
+        url_list = []
+        #soup = BeautifulSoup(page_html.text, 'lxml')
+
+        # for item in soup.select('ul.article-tab-list > li'):
+        #     href = item.find('a').get('href')
+        #     #print(href)
+        #     url_list.append(base_url + href)
+
+        for item in browser.find_elements_by_css_selector('ul.article-tab-list > li'):
+            href = item.find_element_by_css_selector('a').get_attribute('href')
+            #print(href)
+            url_list.append(href)
+
+        return url_list
+    except Exception as e:
+        print(e)
+        print("Can't find page")
+        return []
+        
 
 
 def get_iteminfo(url):
     """
-    爬取该标准的名称，若有源pdf文件则给出下载链接
-    :param url:标准网页链接
-    :return: item_info: dict()，标准信息
+    爬取新闻文本
+    :param url:新闻网页链接
+    :return: item_info: dict()，新闻信息
     """
     item_info = dict()
-    html = requests.get(url,headers=headers1)
+    html = requests.get(url, headers=headers1)
     soup = BeautifulSoup(html.text,'lxml')
-    title = soup.find('title').text
+    title = soup.find(class_='text-success').text
+    pubdate = soup.select('.article-subtitle > span')[1].select('em')[0].text.strip()
+    if '2018' not in pubdate:
+        return None
+    viewCount = soup.select('.article-subtitle > span')[2].select('em')[0].text
+    content = soup.select('.new-article')[0].get_text()
     item_info['title'] = title
+    item_info['pubdate'] = pubdate
+    item_info['viewCount'] = viewCount
     item_info['url'] = url
-    #print(title)
-    down_btn = len(soup.find_all(class_='btn btn-file'))
-    if down_btn==3:
-        num = url.split('/')[4].split('.')[0]
-        download_url = download_baseurl+num
-        item_info['download_url'] = download_url
-        #print(download_url)
-    else:
-        item_info['download_url'] = ''
-        #print('无原pdf可下载')
+    item_info['content'] = content
 
-    #print(item_info)
+    print(item_info)
     return item_info
 
-def spider(page_begin,page_end):
+def spider(page_begin, page_end):
     """
     爬虫
     :param page_begin: 起始pagenum
     :param page_end: 结束pagenum
-    :param filename: 保存结果文件路径
     :return:
     """
-    standards = []
+    food_news = []
     for i in range(page_begin,page_end):
         print(i)
         print('_______第'+str(i)+'页________')
@@ -135,27 +150,22 @@ def spider(page_begin,page_end):
         for j in range(len(urls)):
             print(urls[j])
             item_info = get_iteminfo(urls[j])
-            my_set.insert(item_info)
-    #         standards.append(item_info)
-    #
-    #     #将标准信息写入csv文件
-    #     with open(filename, 'a') as f:
-    #         w = csv.writer(f)
-    #         for standard in standards:
-    #             w.writerow([standard['title'], standard['url'], standard['download_url']])
-    # return standards
+            if item_info:
+                food_news.append(item_info)
+    return food_news
 
-def write2csv(standards,filename):
-    with open(filename,'a') as f:
+def write2csv(food_news, filename):
+    headers = ['title', 'pubdate', 'viewCount', 'url', 'content']
+    with open(filename, 'w', newline='') as f:
         w = csv.writer(f)
-        for standard in standards:
-            w.writerow([standard['title'],standard['url'],standard['download_url']])
+        w.writerow(headers)
+        for news in food_news:
+            w.writerow(list(news.values()))
+    print('成功写入csv文件！')
 
 
 
 if __name__ == '__main__':
-    #get_item_url(1)
-    #get_iteminfo("http://www.eshian.com/standards/13801.html")
-    standards = spider(1,10)
-    #write2csv(standards,'result.csv')
-    
+    food_news = spider(1, 80)
+    write2csv(food_news,'eshian_text.csv')
+    browser.quit()
