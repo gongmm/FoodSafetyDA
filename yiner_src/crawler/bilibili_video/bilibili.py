@@ -184,6 +184,9 @@ def download_video(target_directory, aid, url):
     :param url: 视频源链接
     :return:
     """
+    if not url:
+        print('没有url')
+        return
     print('开始下载'+str(aid))
     if not os.path.exists(target_directory):
         os.mkdir(target_directory)

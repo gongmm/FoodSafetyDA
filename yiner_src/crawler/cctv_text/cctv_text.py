@@ -9,8 +9,6 @@ import os
 import csv
 import pandas as pd
 from selenium import webdriver
-from pymongo import MongoClient
-import jsonpath
 
 UA_LIST = [
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
@@ -56,51 +54,63 @@ headers = {
     'Cache-Control': 'max-age=0',
     'Proxy-Connection': 'keep-alive',
     'Upgrade-Insecure-Requests': '1',
-    'User-Agent': random.choice(UA_LIST),
-
+    'User-Agent': random.choice(UA_LIST)
 }
 
+des_dir = 'csv'
+csv_name = 'cctv_text.csv'
+browser = webdriver.Chrome()
 
-def spider():
-    category_url = ['http://news.cctv.com/china/data/index.json',
-                    ' http://news.cctv.com/world/data/index.json',
-                    'http://military.cctv.com/data/index.json',
-                    'http://news.cctv.com/tech/data/index.json',
-                    'http://news.cctv.com/society/data/index.json',
-                    ' http://news.cctv.com/law/data/index.json',
-                    'http://news.cctv.com/ent/data/index.json',
-                    ' http://jingji.cctv.com/data/index.json']
 
-    conn = MongoClient('127.0.0.1', 27017)
-    db = conn.cctv  # 连接mydb数据库，没有则自动创建
-    my_set = db.junknews  # 使用newspeople集合，没有则自动创建
-
-    for i,category in enumerate(category_url):
-        print('第'+str(i)+'类______'+category+'______')
-        #print(category)
-        url_list = get_news_url(category)
-        news_list = []
-        for url in url_list:
-            news_info = get_content(url)
+def spider_food(begin, end):
+    """
+    根据页码进行食品安全关键词下的爬虫
+    :param begin:
+    :param end:
+    :return:
+    """
+    food_url = 'https://search.cctv.com/search.php?qtext=食品安全&sort=relevance&type=web&vtime=&datepid=1&channel=&page='
+    news_list = []
+    for i in range(begin, end+1):
+        print('____爬取第'+str(i)+'页____')
+        url = food_url+str(i)
+        news_url = get_news_url(url)
+        for news in news_url:
+            news_info = get_content(news)
             if news_info:
                 news_list.append(news_info)
-        my_set.insert(news_list)
 
-def get_news_url(class_url):
+    if des_dir not in os.listdir():
+        os.mkdir(des_dir)
+    path = os.path.join(des_dir, csv_name)  
+    headers = ['title', 'pubdate', 'url', 'content']  
+    save_file(path, headers, news_list)
+
+
+
+def get_news_url(page_url):
     """
-    获取当前类别的新闻链接
-    :param class_url: 不同分类的初始链接
+    获取每一页的新闻链接
+    :param page_url: 页码链接
     :return: news_url：新闻链接list
     """
-    html = requests.get(class_url,headers=headers)
-    html.encoding='utf-8'
-    json_html = json.loads(html.text)
-    url_list = jsonpath.jsonpath(json_html,'$..url')
+    browser.get(page_url)
+    # html = requests.get(page_url,headers=headers)
+    # print(html.text)
+    html_doc = browser.page_source
+    #print(html_doc)
+    soup = BeautifulSoup(html_doc,'lxml')
+    news_urls = []
 
-    # for title in title_list:
-    #     print(title)
-    return url_list
+    news_div = soup.find('div',attrs={'class':'outer'})
+    news = news_div.find_all('li')
+    #print(news)
 
+    for li in news:
+        #print(li.find('span').get('lanmu1'))
+        news_urls.append(li.find('span').get('lanmu1'))
+    time.sleep(0.5)
+    return news_urls
 
 def get_content(news_url):
     """
@@ -144,7 +154,7 @@ def get_content(news_url):
 
 
 
-def save_file(filename,news_list):
+def save_file(filename, headers, news_list):
     """
     将爬取到的新闻存入csv文件
     :param filename:
@@ -153,14 +163,11 @@ def save_file(filename,news_list):
     """
     with open(filename,'a') as f:
         writer = csv.writer(f)
+        writer.writerow(headers)
         for news in news_list:
-            writer.writerow([news['title'],news['pubdate'],news['url'],news['content']])
+            writer.writerow([news['title'], news['pubdate'], news['url'], news['content']])
+        print('成功保存至csv文件！')
 
 
 if __name__ == '__main__':
-    # news_list = spider()
-    # save_file('foodsafty.csv',news_list)
-    #get_content('http://military.cctv.com/2019/03/25/ARTIb2vQqxr7dSRL7A7lcdMU190325.shtml?spm=C95414.PwcreT7zLCIH.S24711.3')
-    #get_news_url('http://news.cctv.com/tech/data/index.json')
-    spider()
-
+    spider_food(1, 50)  # 50页之后都是重复
