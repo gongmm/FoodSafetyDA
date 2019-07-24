@@ -102,21 +102,24 @@ class cctv_spider():
                     self.parse_json(json_data)
                     for key, dic in self.video_dict.items():
                         row = []
+                        # 按headers的顺序添加
                         row.append(key)
-                        for value in dic.values():
-                            row.append(value)
-                        self.rows.append(row)
+                        row.append(dic.get('uploadtime'))
+                        row.append(dic.get('video_url'))
+                        print(row)
+                        if not len(row) == 0:
+                        	self.rows.append(row)
                     self.video_dict = {}
 
-        headers = ['videoId', 'title', 'pubdate', 'video_url', 'm3u8_url']
+        headers = ['title', 'uploadtime', 'video_url']
 
         if des_dir not in os.listdir():
             os.mkdir(des_dir)
         path = os.path.join(des_dir, csv_name)
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, 'w', encoding='utf-8', newline='') as f:
             f_csv = csv.writer(f)
             f_csv.writerow(headers)
-            f_csv.writerows(rows)
+            f_csv.writerows(self.rows)
         print('转换成功！')
 
     def get_page(self, url):
@@ -190,20 +193,24 @@ class cctv_spider():
                     print ('videoCenterId ' + videoCenterId)
 
                     self.m3u8_url = 'http://asp.cntv.kcdnvip.com/asp/hls/1200/0303000a/3/default/' + videoCenterId + '/1200.m3u8'
-                    # 信息存入字典
-                    self.video_dict[key]['videoId'] = videoCenterId
-                    self.video_dict[key]['m3u8_url'] = self.m3u8_url
 
                     try:
                         response = requests.get(self.m3u8_url, headers=self.header)
                         html = response.text
                         print('获取m3u8文件成功，准备下载文件')
 
-                        #self.parse_ts(html)
+                        self.parse_ts(html)
 
                     except Exception as err:
                         print(err)
                         print('缓存文件请求错误，请检查错误')
+                        if not os.listdir(self.title):
+                        	shutil.rmtree(self.title)
+            else:
+            	print('无法获取视频网页！')
+            	if not os.listdir(self.title):
+                    shutil.rmtree(self.title)
+                        	
         # 只下单个视频文件
         '''  
         key = '国务院食品安全办 多数居民存在食品安全认知误区'

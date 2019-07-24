@@ -64,8 +64,31 @@ base_url = "http://www.eshian.com"
 download_baseurl = "http://www.eshian.com/sat/standard/standardinfodown/"
 
 page_url = 'http://www.eshian.com/sat/foodinformation/hync/articlelist/17/453/1'
-chrome_driver = '/Users/yiner/anaconda3/lib/python3.6/site-packages/selenium/webdriver/chrome/chromedriver'
-browser = webdriver.Chrome(executable_path=chrome_driver)
+#chrome_driver = '/Users/yiner/anaconda3/lib/python3.6/site-packages/selenium/webdriver/chrome/chromedriver'
+#browser = webdriver.Chrome(executable_path=chrome_driver)
+#option = webdriver.ChromeOptions()
+#option.add_argument('--proxy=49.86.182.111:9999')
+#option.add_argument('--proxy-server=http://27.208.29.151:8060')
+#option.add_argument('--proxy-type=http')
+
+#browser = webdriver.Chrome(options=option)
+
+def get_ip_list(path):
+    with open(path, 'r') as f:
+        proxies_list = f.readlines();
+        return proxies_list
+
+ip_list = get_ip_list('proxy.txt')
+index = 0  
+
+def get_ip():
+    global index
+    proxy_ip = 'http://' + ip_list[index][:-1]
+    proxies = {'http': proxy_ip}
+    index = (index+1) % len(ip_list)
+    return proxies
+
+proxies = get_ip()
 
 def get_item_url(pagenum):
     """
@@ -73,42 +96,70 @@ def get_item_url(pagenum):
     :param pagenum:
     :return:
     """
-    page_html = browser.get(page_url)
-    input_str = browser.find_element_by_id('_paging_ingput_value_')
-    input_str.clear()
-    input_str.send_keys(pagenum)
-    time.sleep(0.5)
-    button = browser.find_element_by_id('gotoPage')
-    button.click()
+    # page_html = browser.get(page_url)
+    # input_str = browser.find_element_by_id('_paging_ingput_value_')
+    # input_str.clear()
+    # input_str.send_keys(pagenum)
+    # time.sleep(0.5)
+    # button = browser.find_element_by_id('gotoPage')
+    # button.click()
     
-    try:
-        #最多等待10秒
-        locator = (By.ID, '_paging_ingput_value_')
-        WebDriverWait(browser, 10).until(
-            expected_conditions.visibility_of_element_located(locator))
+    # try:
+    #     #最多等待10秒
+    #     locator = (By.ID, '_paging_ingput_value_')
+    #     WebDriverWait(browser, 10).until(
+    #         expected_conditions.visibility_of_element_located(locator))
 
-        date = browser.find_elements_by_css_selector('span.pull-right').pop(-1).text
-        if '2018' not in date:
-            return []
-        url_list = []
-        #soup = BeautifulSoup(page_html.text, 'lxml')
+    #     date = browser.find_elements_by_css_selector('span.pull-right').pop(-1).text
+    #     if '2018' not in date:
+    #         return []
+    #     url_list = []
+    #     #soup = BeautifulSoup(page_html.text, 'lxml')
 
-        # for item in soup.select('ul.article-tab-list > li'):
-        #     href = item.find('a').get('href')
-        #     #print(href)
-        #     url_list.append(base_url + href)
+    #     # for item in soup.select('ul.article-tab-list > li'):
+    #     #     href = item.find('a').get('href')
+    #     #     #print(href)
+    #     #     url_list.append(base_url + href)
 
-        for item in browser.find_elements_by_css_selector('ul.article-tab-list > li'):
-            href = item.find_element_by_css_selector('a').get_attribute('href')
-            #print(href)
-            url_list.append(href)
+    #     for item in browser.find_elements_by_css_selector('ul.article-tab-list > li'):
+    #         href = item.find_element_by_css_selector('a').get_attribute('href')
+    #         #print(href)
+    #         url_list.append(href)
 
-        return url_list
-    except Exception as e:
-        print(e)
-        print("Can't find page")
-        return []
-        
+    #     return url_list
+    # except Exception as e:
+    #     print(e)
+    #     print("Can't find page")
+    #     return []
+
+    times = 1
+    while True:
+        try:
+            global proxies
+            if times%3 == 0:
+                proxies = get_ip()
+                print('已重新获取ip\n', proxies)
+            print('正在获取页面...')
+            print(proxies)
+            html = requests.post(page_url, headers=headers1, data={'pageNo':str(pagenum-1)}, proxies=proxies, timeout=5)
+            soup = BeautifulSoup(html.text,'lxml')
+            last_date = soup.select('span.pull-right')[-1].text
+            if '2018' not in last_date:  # 筛选2018年的
+                return []
+
+            url_list = []
+            for item in soup.select('ul.article-tab-list > li'):
+                href = item.find('a').get('href')
+                #print(href)
+                url_list.append(base_url + href)
+        except requests.exceptions.ConnectTimeout as e:
+            print(e)
+            print('请求超时！')
+            times += 1
+        finally:
+            if times >=7:
+                print('无法请求页面！')
+                return []
 
 
 def get_iteminfo(url):
@@ -118,22 +169,41 @@ def get_iteminfo(url):
     :return: item_info: dict()，新闻信息
     """
     item_info = dict()
-    html = requests.get(url, headers=headers1)
-    soup = BeautifulSoup(html.text,'lxml')
-    title = soup.find(class_='text-success').text
-    pubdate = soup.select('.article-subtitle > span')[1].select('em')[0].text.strip()
-    if '2018' not in pubdate:
-        return None
-    viewCount = soup.select('.article-subtitle > span')[2].select('em')[0].text
-    content = soup.select('.new-article')[0].get_text()
-    item_info['title'] = title
-    item_info['pubdate'] = pubdate
-    item_info['viewCount'] = viewCount
-    item_info['url'] = url
-    item_info['content'] = content
+    
+    times = 1
+    while True:
+        try:
+            global proxies
+            if times%3 == 0:
+                proxies = get_ip()
+                print('已重新获取ip')
+            print('正在获取页面...')
+            html = requests.get(url, headers=headers1, proxies=proxies, timeout=5)
+            soup = BeautifulSoup(html.text,'lxml')
+            title = soup.find(class_='text-success').text
+            pubdate = soup.select('.article-subtitle > span')[1].select('em')[0].text.strip()
+            if '2018' not in pubdate:  # 筛选2018年的
+                return None
+            viewCount = soup.select('.article-subtitle > span')[2].select('em')[0].text
+            content = soup.select('.new-article')[0].get_text()
+            item_info['title'] = title
+            item_info['pubdate'] = pubdate
+            item_info['viewCount'] = viewCount
+            item_info['url'] = url
+            item_info['content'] = content
+            print(item_info)
+            return item_info
+        except requests.exceptions.ConnectTimeout as e:
+            print(e)
+            print('请求超时！')
+            times += 1
+            time.sleep()
+        finally:
+            if times >=7:
+                print('无法请求页面！')
+                return None
 
-    print(item_info)
-    return item_info
+    
 
 def spider(page_begin, page_end):
     """
@@ -143,6 +213,9 @@ def spider(page_begin, page_end):
     :return:
     """
     food_news = []
+    des_dir = 'csv'
+    csv_name = 'eshian_text.csv'
+    write_header_2csv(des_dir, csv_name)
     for i in range(page_begin,page_end):
         print(i)
         print('_______第'+str(i)+'页________')
@@ -150,22 +223,35 @@ def spider(page_begin, page_end):
         for j in range(len(urls)):
             print(urls[j])
             item_info = get_iteminfo(urls[j])
+            time.sleep(5)
             if item_info:
                 food_news.append(item_info)
-    return food_news
+        if food_news:
+            write2csv(food_news, des_dir, csv_name)
+        food_news = []
 
-def write2csv(food_news, filename):
+def write_header_2csv(des_dir, csv_name):
+    if des_dir not in os.listdir():
+        os.mkdir(des_dir)
+    path = os.path.join(des_dir, csv_name)
     headers = ['title', 'pubdate', 'viewCount', 'url', 'content']
-    with open(filename, 'w', newline='') as f:
+    with open(path, 'a', newline='') as f:
         w = csv.writer(f)
         w.writerow(headers)
-        for news in food_news:
-            w.writerow(list(news.values()))
-    print('成功写入csv文件！')
+
+
+def write2csv(food_news, des_dir, csv_name):
+	if des_dir not in os.listdir():
+		os.mkdir(des_dir)
+	path = os.path.join(des_dir, csv_name)
+	with open(path, 'a', newline='') as f:
+		w = csv.writer(f)
+		for news in food_news:
+			w.writerow(list(news.values()))
+	print('成功写入csv文件！')
 
 
 
 if __name__ == '__main__':
-    food_news = spider(1, 80)
-    write2csv(food_news,'eshian_text.csv')
+    food_news = spider(40, 80)
     browser.quit()

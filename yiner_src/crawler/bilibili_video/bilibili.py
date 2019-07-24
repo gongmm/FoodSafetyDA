@@ -169,7 +169,7 @@ def spider_bili(dirname, des_dir, csv_name, begin, end):
     if des_dir not in os.listdir():
         os.mkdir(des_dir)
     path = os.path.join(des_dir, csv_name)
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, 'w', encoding='utf-8', newline='') as f:
         f_csv = csv.writer(f)
         f_csv.writerow(headers)
         f_csv.writerows(rows)
@@ -192,6 +192,9 @@ def download_video(target_directory, aid, url):
         os.mkdir(target_directory)
     filename = str(aid)+'.mp4'
     filepath = os.path.join(target_directory, filename)
+    if os.path.exists(filepath):
+    	print('mp4文件已存在！')
+    	return
     # 二进制写入
     with open(filepath, 'wb') as f:
         try:
