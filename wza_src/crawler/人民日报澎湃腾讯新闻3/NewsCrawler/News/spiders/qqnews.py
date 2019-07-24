@@ -72,10 +72,10 @@ class QQNews(scrapy.Spider):
         newsid = time + id + '00'
         request_url = "https://openapi.inews.qq.com/getQQNewsNormalContent?id=" + newsid + "&chlid=news_rss&refer=mobilewwwqqcom&otype=jsonp&ext_data=all&srcfrom=newsapp&callback=getNewsContentOnlyOutput"
         # last_url="https://new.qq.com/cmsn/"+time+"/"+newsid
-        yield scrapy.Request(url=request_url, callback=self.parsecontent,
+        yield scrapy.Request(url=request_url, callback=self.parse_content,
                              meta={'pubdate': time})
 
-    def parsecontent(self, response):
+    def parse_content(self, response):
         pubdate = response.meta["pubdate"]
         g = re.search("getNewsContentOnlyOutput\\((.+)\\)", response.body.decode('utf-8'))
         data_json = json.loads(g.group(1))
@@ -90,6 +90,6 @@ class QQNews(scrapy.Spider):
                 item['keyword'] = self.keyword
                 yield item
             except Exception as e:
-                print(e.message)
+                print(str(e))
         else:
             pass
