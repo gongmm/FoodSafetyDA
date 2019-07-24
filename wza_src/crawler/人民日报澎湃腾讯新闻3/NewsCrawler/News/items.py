@@ -12,10 +12,10 @@ class NewsItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
 
-    keyword=scrapy.Field()
-    url=scrapy.Field()
-    pubdate=scrapy.Field()
-    title=scrapy.Field()
-    content=scrapy.Field()
+    keyword = scrapy.Field()
+    url = scrapy.Field()
+    pubdate = scrapy.Field()
+    title = scrapy.Field()
+    content = scrapy.Field()
 
-    #digest=scrapy.Field()
+    # digest=scrapy.Field()
