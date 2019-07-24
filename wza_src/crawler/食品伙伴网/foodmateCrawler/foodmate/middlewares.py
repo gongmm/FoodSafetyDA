@@ -4,12 +4,62 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+from flask import logging
 from scrapy import signals
 import random
 from foodmate.settings import user_agents
+from scrapy import signals
+from fake_useragent import UserAgent
 
-class ShipinSpiderMiddleware(object):
+
+class RandomUserAgentMiddleware(object):
+    def __init__(self, crawler):
+        super(RandomUserAgentMiddleware, self).__init__()
+
+        self.ua = UserAgent(use_cache_server=False)
+        # #从setting文件中读取RANDOM_UA_TYPE值
+        self.ua_type = crawler.settings.get('RANDOM_UA_TYPE', 'random')
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler)
+
+    def process_request(self, request, spider):
+        def get_ua():
+            '''Gets random UA based on the type setting (random, firefox…)'''
+            return getattr(self.ua, self.ua_type)
+
+        user_agent_random = get_ua()
+        request.headers.setdefault('User-Agent', user_agent_random)  # 这样就是实现了User-Agent的随即变换
+        request.headers['User-Agent'] = user_agent_random
+        print(user_agent_random)
+
+    def process_response(self, request, response, spider):
+        user_agent = request.headers['User-Agent']
+        print(user_agent)
+        return response
+
+
+class ProxyMiddleware(object):
+    logger = logging.getLogger(__name__)
+
+    @staticmethod
+    def get_random_ip():
+        proxy_list = []
+        with open('proxy.txt', 'r') as f:
+            for line in f.readlines():
+                proxy_list.append(line.strip('\n'))
+        proxy_ip = random.choice(proxy_list)
+        # print(proxy_ip)
+        return 'http://' + str(proxy_ip)
+
+    def process_request(self, request, spider):
+        ip = self.get_random_ip()
+        print("Current IP:Port is %s" % ip)
+        request.meta['proxy'] = ip
+
+
+class FoodmateSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -102,6 +152,8 @@ class ShipinDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
 class RandomUserAgent(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
@@ -115,7 +167,7 @@ class RandomUserAgent(object):
         return s
 
     def process_request(self, request, spider):
-        request.headers['User-Agent']=random.choice(user_agents)
+        request.headers['User-Agent'] = random.choice(user_agents)
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.

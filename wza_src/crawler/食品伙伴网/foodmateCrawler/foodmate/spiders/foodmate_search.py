@@ -25,7 +25,6 @@ class FoodMateNews(scrapy.Spider):
             link = li_content.xpath("./a/@href").extract()[0]
             title = li_content.xpath("./a/@title").extract()[0]
             time = li_content.xpath("./span/text()").extract()[0]
-            # datetime.datetime.strptime(time,"%Y-%m-%d %H:%M")
             if "2018-01-01 00:00" < time < "2019-01-01 00:00":
                 yield Request(url=link, meta={'title': title, 'link': link, 'time': time}, callback=self.parse_content)
             else:

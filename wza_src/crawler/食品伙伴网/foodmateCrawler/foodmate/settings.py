@@ -53,6 +53,7 @@ DOWNLOAD_DELAY = 3
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'foodmate.middlewares.RandomUserAgent': 543,
+    # 'foodmate.middlewares.ProxyMiddleware': 510,
 }
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -63,7 +64,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'foodmate.pipelines.FoodMateDatabasePipeline': 300,
+    # 'foodmate.pipelines.FoodMateDatabasePipeline': 300,
+    'foodmate.pipelines.FoodMatePipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
