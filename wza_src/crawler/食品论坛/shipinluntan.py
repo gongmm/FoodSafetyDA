@@ -1,10 +1,13 @@
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 from selenium import webdriver
 from lxml import etree
 import requests
 import random
 import csv
-#import BeautifulSoup
+import re
+import time
+
+# import BeautifulSoup
 
 UA_LIST = [
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
@@ -55,65 +58,29 @@ headers = {
 }
 
 allow_domain = 'http://bbs.foodmate.net/'
-def luntan():
 
-    keyword='非洲猪瘟'
-    browser=webdriver.Chrome(executable_path='E:\soft\chromedriver_win32\chromedriver.exe')
+
+def parse_search_page():
+    keyword = '非洲猪瘟'
+    browser = webdriver.Chrome()
     browser.get('http://bbs.foodmate.net/search.php?')
-    input_key=browser.find_element_by_id('scform_srchtxt')
+    # 输入搜索内容
+    input_key = browser.find_element_by_id('scform_srchtxt')
     input_key.clear()
     input_key.send_keys(keyword)
-    button=browser.find_element_by_id('scform_submit')
+    button = browser.find_element_by_id('scform_submit')
     button.click()
-    #h2=browser.window_handles
-    #browser.switch_to.window(h2[1])
-    sel=etree.HTML(browser.page_source)
+    # h2=browser.window_handles
+    # browser.switch_to.window(h2[1])
+    # 获得搜索结果
+    sel = etree.HTML(browser.page_source)
+    print("====== Crawling Page: " + str(1) + "========")
 
-    div_content=sel.xpath('//div[@id="threadlist"]/ul/li')
-    for ul_content in div_content:
-        title=ul_content.xpath(".//a/text()")
-        titles=''
-        for i in title:
-            titles=titles+i
-        print(titles)
-        url=ul_content.xpath(".//a/@href")[0]
-        print(url)
-        time=ul_content.xpath('./p[3]/span[1]/text()')[0]
-            #print(time)
-        parse(url,titles,time)
-    nextpage = sel.xpath("//div[@class='pg']")
-    if nextpage:
-        nextpage=sel.xpath("//div[@class='pg']/a/@href")[0]
-        next_page(nextpage)
-def parse(url,title,time):
-    print ("parse"+url)
-
-    contentpagesource = requests.get(allow_domain + url, headers=headers)
-    contentsel = etree.HTML(contentpagesource.text)
-    contents = contentsel.xpath('//div[@class="t_fsz"]//td[@class="t_f"]')
-    reviewlist=[]
-    for td_content in contents:
-        review = td_content.xpath('./text()')[0]
-
-        #review = td_content.xpath('./td[@class="t_f"]')
-        print(review)
-        reviewlist.append(review)
-        '''存数据'''
-    item={}
-    item['time']=time
-    item['title']=title
-    item['reviews']=reviewlist
-    save('luntan.csv',item)
-    nextpage =contentsel.xpath('//div[@class="pgbtn"]')
-    if nextpage:
-        nextpage=contentsel.xpath('//div[@class="pgbtn"]/a/@href')[0]
-        parse(nextpage,title,time)
-
-def next_page(url):
-    pagesource = requests.get(allow_domain + url, headers=headers)
-    sel = etree.HTML(pagesource.text)
-    div_content = sel.xpath('//div[@id="threadlist"]/ul/li')
-    for ul_content in div_content:
+    div_content = sel.xpath('//div[@id="threadlist"]//h3')
+    for index, ul_content in enumerate(div_content):
+        print("====== Crawling Item: " + str(index) + "========")
+        # for index in range(len(div_content)):
+        #     ul_content = div_content[index]
         title = ul_content.xpath(".//a/text()")
         titles = ''
         for i in title:
@@ -121,18 +88,77 @@ def next_page(url):
         print(titles)
         url = ul_content.xpath(".//a/@href")[0]
         print(url)
-        time = ul_content.xpath('./p[3]/span[1]/text()')[0]
+        pub_date = ul_content.xpath('../p[3]/span[1]/text()')[0]
         # print(time)
-        parse(url,titles,time)
-    nextpage = sel.xpath("//div[@class='pg']")
-    if nextpage:
-        nextpage = sel.xpath("//div[@class='pg']/a/@href")[0]
-        next_page(nextpage)
-def save(filename,item):
+        parse(url, titles, pub_date)
+    # 是否存在下一页
+    if sel.xpath("//div[@class='pg']"):
+        next_page(sel.xpath("//div[@class='pg']/a/@href")[0])
+
+
+def parse(url, title, pub_date):
+    content_str = ""
+    index = 0
+    while True:
+        index += 1
+        # print("parse" + url)
+        print("====== Crawling Topic Page: " + str(index) + "========")
+        topic_per_page = requests.get(allow_domain + url, headers=headers)
+        time.sleep(3)
+        content_sel = etree.HTML(topic_per_page.text)
+        contents = content_sel.xpath('//td[@class="t_f"]')
+        for td_content in contents:
+            review_list = td_content.xpath('.//text()')
+
+            for review in review_list:
+                remove_chars = '[0-9a-zA-Z’!"#$%&\'()*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~]+'
+                content_str += re.sub(remove_chars, '', review).strip()
+            content_str += '\n'
+            # review = td_content.xpath('./td[@class="t_f"]')
+        # print(content_str)
+        if content_sel.xpath('//div[@class="pgbtn"]'):
+            url = content_sel.xpath('//div[@class="pgbtn"]/a/@href')[0]
+        else:
+            break
+
+    '''存数据'''
+    item = {}
+    item['time'] = pub_date
+    item['title'] = title
+    item['content'] = content_str
+    save('luntan.csv', item)
+
+
+def next_page(url):
+    print("====== Crawling Page: " + url + "========")
+    page_source = requests.get(allow_domain + url, headers=headers)
+    sel = etree.HTML(page_source.text)
+    div_content = sel.xpath('//div[@id="threadlist"]//h3')
+    for index, ul_content in enumerate(div_content):
+        print("====== Crawling Item: " + str(index) + "========")
+        # for index in range(len(div_content)):
+        #     ul_content = div_content[index]
+        title = ul_content.xpath(".//a/text()")
+        titles = ''
+        for i in title:
+            titles = titles + i
+        print(titles)
+        url = ul_content.xpath(".//a/@href")[0]
+        print(url)
+        pub_date = ul_content.xpath('../p[3]/span[1]/text()')[0]
+        # print(time)
+        parse(url, titles, pub_date)
+    # 是否存在下一页
+    if sel.xpath("//div[@class='pg']"):
+        next_page(sel.xpath("//div[@class='pg']/a/@href")[0])
+
+
+def save(filename, item):
     with open(filename, 'a+', encoding='utf-8', newline='') as f:
         # f = open(filename,'a+',encoding='utf-8',newline = '')
         writer = csv.writer(f, dialect="excel")
-        writer.writerow([item['time'], item['title'], item['reviews']])
+        writer.writerow([item['time'], item['title'], item['content']])
 
-if __name__=='__main__':
-    luntan()
+
+if __name__ == '__main__':
+    parse_search_page()
