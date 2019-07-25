@@ -175,12 +175,14 @@ def get_iteminfo(url):
     while True:
         try:
             global proxies
-            if times%3 == 0:
+            if times%2 == 0:
                 proxies = get_ip()
                 print('已重新获取ip')
             print('正在获取新闻页面...')
             html = requests.get(url, headers=headers1, proxies=proxies, timeout=5)
             soup = BeautifulSoup(html.text,'lxml')
+            if not soup.find(class_='text-success'):
+            	continue
             title = soup.find(class_='text-success').text
             pubdate = soup.select('.article-subtitle > span')[1].select('em')[0].text.strip()
             if '2018' not in pubdate:  # 筛选2018年的
@@ -236,7 +238,7 @@ def write_header_2csv(des_dir, csv_name):
         os.mkdir(des_dir)
     path = os.path.join(des_dir, csv_name)
     headers = ['title', 'pubdate', 'viewCount', 'url', 'content']
-    with open(path, 'a', newline='') as f:
+    with open(path, 'a', newline='', encoding='utf-8') as f:
         w = csv.writer(f)
         w.writerow(headers)
 
@@ -245,7 +247,7 @@ def write2csv(food_news, des_dir, csv_name):
 	if des_dir not in os.listdir():
 		os.mkdir(des_dir)
 	path = os.path.join(des_dir, csv_name)
-	with open(path, 'a', newline='') as f:
+	with open(path, 'a', newline='', encoding='utf-8') as f:
 		w = csv.writer(f)
 		for news in food_news:
 			w.writerow(list(news.values()))
