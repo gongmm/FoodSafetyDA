@@ -75,16 +75,16 @@ page_url = 'http://www.eshian.com/sat/foodinformation/hync/articlelist/17/453/1'
 
 def get_ip_list(path):
     with open(path, 'r') as f:
-        proxies_list = f.readlines();
+        proxies_list = f.readlines()
         return proxies_list
 
-ip_list = get_ip_list('proxy.txt')
+ip_list = get_ip_list('proxy6.txt')
 index = 0  
 
 def get_ip():
     global index
-    proxy_ip = 'http://' + ip_list[index][:-1]
-    proxies = {'http': proxy_ip}
+    proxy_ip = 'https://' + ip_list[index][:-1]
+    proxies = {'https': proxy_ip}
     index = (index+1) % len(ip_list)
     return proxies
 
@@ -136,10 +136,10 @@ def get_item_url(pagenum):
     while True:
         try:
             global proxies
-            if times%3 == 0:
+            if times>=2:
                 proxies = get_ip()
                 print('已重新获取ip\n', proxies)
-            print('正在获取页面...')
+            print('正在获取列表页面...')
             print(proxies)
             html = requests.post(page_url, headers=headers1, data={'pageNo':str(pagenum-1)}, proxies=proxies, timeout=5)
             soup = BeautifulSoup(html.text,'lxml')
@@ -152,6 +152,7 @@ def get_item_url(pagenum):
                 href = item.find('a').get('href')
                 #print(href)
                 url_list.append(base_url + href)
+            return url_list
         except requests.exceptions.ConnectTimeout as e:
             print(e)
             print('请求超时！')
@@ -177,7 +178,7 @@ def get_iteminfo(url):
             if times%3 == 0:
                 proxies = get_ip()
                 print('已重新获取ip')
-            print('正在获取页面...')
+            print('正在获取新闻页面...')
             html = requests.get(url, headers=headers1, proxies=proxies, timeout=5)
             soup = BeautifulSoup(html.text,'lxml')
             title = soup.find(class_='text-success').text

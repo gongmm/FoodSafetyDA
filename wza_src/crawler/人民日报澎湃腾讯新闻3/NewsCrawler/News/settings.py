@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'News.spiders'
 
 # DOWNLOAD_DELAY=5
 ITEM_PIPELINES = {
-    'News.pipelines.NewsWBPipeline': 300
+    'News.pipelines.FoodMateDatabasePipeline': 300
 }
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'News (+http://www.yourdomain.com)'
