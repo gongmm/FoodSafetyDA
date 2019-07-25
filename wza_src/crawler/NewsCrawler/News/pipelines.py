@@ -31,5 +31,5 @@ class NewsWBPipeline(object):
             # 导出表格操作
             line = [item['keyword'], item['url'], item['pubdate'], item['title'], item['content']]  # 把数据每一行整理出来
             self.ws.append(line)  # 将数据一行的形式添加到xlsx中
-            self.wb.save('pengpai.xlsx')  # 保存xlsx文件
+            self.wb.save('news.xlsx')  # 保存xlsx文件
             return item
