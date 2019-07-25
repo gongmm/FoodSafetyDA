@@ -152,7 +152,7 @@ def spider_bili(dirname, des_dir, csv_name, begin, end):
     """
 
     rows = []
-    headers = ['aid', 'title', 'pubdate', 'video_url', 'source_url', 'commentCount', 'like', 'collect']
+    headers = ['aid', 'title', 'pubdate', 'video_url', 'source_url', 'commentCount', 'like', 'collect', 'content']
 
     for index in range(begin, end+1):    #遍历页数
         print('开始爬取第' + str(index) + '页视频')

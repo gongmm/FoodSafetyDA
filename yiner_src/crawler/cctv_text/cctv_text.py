@@ -69,6 +69,17 @@ def spider_food(begin, end):
     :param end:
     :return:
     """
+
+    # 判定csv文件是否存在，并写入headers
+    if des_dir not in os.listdir():
+        os.mkdir(des_dir)
+    path = os.path.join(des_dir, csv_name)
+    headers = ['title', 'pubdate', 'url', 'content']
+    with open(path, 'a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(headers)
+
+
     food_url = 'https://search.cctv.com/search.php?qtext=食品安全&sort=relevance&type=web&vtime=&datepid=1&channel=&page='
     news_list = []
     for i in range(begin, end+1):
@@ -79,12 +90,8 @@ def spider_food(begin, end):
             news_info = get_content(news)
             if news_info:
                 news_list.append(news_info)
-
-    if des_dir not in os.listdir():
-        os.mkdir(des_dir)
-    path = os.path.join(des_dir, csv_name)  
-    headers = ['title', 'pubdate', 'url', 'content']  
-    save_file(path, headers, news_list)
+        save_file(path, news_list)
+        news_list = []
 
 
 
@@ -119,19 +126,20 @@ def get_content(news_url):
     :return: news_info：新闻信息，dict类型
     """
     print(news_url)
-    news_info = dict()  #存储新闻内容
-    html = requests.get(news_url,headers=headers)
-    html.encoding = 'utf-8' #解决中文乱码
-    soup = BeautifulSoup(html.text,'lxml')
+    news_info = dict()  # 存储新闻内容
+    # html = requests.get(news_url, headers=headers)
+    browser.get(news_url)
+    html = browser.page_source
+    # html.encoding = 'utf-8'  # 解决中文乱码
+    soup = BeautifulSoup(html, 'lxml')
     url = news_url
     title = soup.find('title').text
     keyword = soup.find('meta',attrs={'name':'keywords'}).get('content')
 
-
-    #if soup.find('span',attrs={'class':'info'}):
+    # if soup.find('span',attrs={'class':'info'}):
     try:
         pubdtae = soup.find('span', attrs={'class': 'info'}).find('i').text.split(' ')[1]
-        #p_list = soup.find_all('p',attrs={'style':'text-indent: 2em;'})
+        # p_list = soup.find_all('p',attrs={'style':'text-indent: 2em;'})
         p_list = soup.find_all('p')
         content = ''
         for p in p_list:
@@ -154,16 +162,15 @@ def get_content(news_url):
 
 
 
-def save_file(filename, headers, news_list):
+def save_file(filename, news_list):
     """
     将爬取到的新闻存入csv文件
     :param filename:
     :param news_list:
     :return:
     """
-    with open(filename,'a') as f:
+    with open(filename, 'a', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(headers)
         for news in news_list:
             writer.writerow([news['title'], news['pubdate'], news['url'], news['content']])
         print('成功保存至csv文件！')

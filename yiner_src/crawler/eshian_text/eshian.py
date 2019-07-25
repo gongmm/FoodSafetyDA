@@ -75,16 +75,16 @@ page_url = 'http://www.eshian.com/sat/foodinformation/hync/articlelist/17/453/1'
 
 def get_ip_list(path):
     with open(path, 'r') as f:
-        proxies_list = f.readlines();
+        proxies_list = f.readlines()
         return proxies_list
 
-ip_list = get_ip_list('proxy.txt')
+ip_list = get_ip_list('proxy6.txt')
 index = 0  
 
 def get_ip():
     global index
-    proxy_ip = 'http://' + ip_list[index][:-1]
-    proxies = {'http': proxy_ip}
+    proxy_ip = 'https://' + ip_list[index][:-1]
+    proxies = {'https': proxy_ip}
     index = (index+1) % len(ip_list)
     return proxies
 
@@ -136,10 +136,10 @@ def get_item_url(pagenum):
     while True:
         try:
             global proxies
-            if times%3 == 0:
+            if times>=2:
                 proxies = get_ip()
                 print('已重新获取ip\n', proxies)
-            print('正在获取页面...')
+            print('正在获取列表页面...')
             print(proxies)
             html = requests.post(page_url, headers=headers1, data={'pageNo':str(pagenum-1)}, proxies=proxies, timeout=5)
             soup = BeautifulSoup(html.text,'lxml')
@@ -152,6 +152,7 @@ def get_item_url(pagenum):
                 href = item.find('a').get('href')
                 #print(href)
                 url_list.append(base_url + href)
+            return url_list
         except requests.exceptions.ConnectTimeout as e:
             print(e)
             print('请求超时！')
@@ -174,12 +175,14 @@ def get_iteminfo(url):
     while True:
         try:
             global proxies
-            if times%3 == 0:
+            if times%2 == 0:
                 proxies = get_ip()
                 print('已重新获取ip')
-            print('正在获取页面...')
+            print('正在获取新闻页面...')
             html = requests.get(url, headers=headers1, proxies=proxies, timeout=5)
             soup = BeautifulSoup(html.text,'lxml')
+            if not soup.find(class_='text-success'):
+            	continue
             title = soup.find(class_='text-success').text
             pubdate = soup.select('.article-subtitle > span')[1].select('em')[0].text.strip()
             if '2018' not in pubdate:  # 筛选2018年的
@@ -235,7 +238,7 @@ def write_header_2csv(des_dir, csv_name):
         os.mkdir(des_dir)
     path = os.path.join(des_dir, csv_name)
     headers = ['title', 'pubdate', 'viewCount', 'url', 'content']
-    with open(path, 'a', newline='') as f:
+    with open(path, 'a', newline='', encoding='utf-8') as f:
         w = csv.writer(f)
         w.writerow(headers)
 
@@ -244,7 +247,7 @@ def write2csv(food_news, des_dir, csv_name):
 	if des_dir not in os.listdir():
 		os.mkdir(des_dir)
 	path = os.path.join(des_dir, csv_name)
-	with open(path, 'a', newline='') as f:
+	with open(path, 'a', newline='', encoding='utf-8') as f:
 		w = csv.writer(f)
 		for news in food_news:
 			w.writerow(list(news.values()))
