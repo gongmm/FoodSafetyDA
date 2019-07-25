@@ -5,7 +5,9 @@ import scrapy
 import json
 from pyquery import PyQuery
 import csv
-from zhihu.items import ZhihuItem
+from zhihu.items import ZhiHuItem
+import re
+import time
 
 
 class ZhiHuSpider(scrapy.Spider):
@@ -44,15 +46,27 @@ class ZhiHuSpider(scrapy.Spider):
         json_text = json.loads(response.text)
         if json_text['paging']['is_end'] == False:
             for data in json_text['data']:
-                item = ZhihuItem()
+                item = ZhiHuItem()
                 if data.get('object'):
                     if data.get('object').get('content'):
-                        item['content'] = data['object']['content']
+                        content = data['object']['content']
+                        content_without_tag = re.sub(r'<.*?>', '', content)
+                        content_without_tag = content_without_tag.replace('\n', '')
+                        item['content'] = content_without_tag
+
+                        date_array = time.localtime(data['object']['created_time'])
+                        date = time.strftime("%Y-%m-%d %H:%M:%S", date_array)
+                        item['pub_date'] = date
                     if data.get('object').get('question'):
                         if data.get('object').get('question').get('name'):
-                            item['question'] = data['object']['question']['name']
+                            content = data['object']['question']['name']
+                            content_without_tag = re.sub(r'<.*?>', '', content)
+                            item['question'] = content_without_tag
                             item['keyword'] = keyword
-                            yield item
+                            if "2018-01-01 00:00" < item['pub_date'] < "2019-01-01 00:00":
+                                yield item
+                            else:
+                                pass
 
         else:
             # 停止爬取下一页

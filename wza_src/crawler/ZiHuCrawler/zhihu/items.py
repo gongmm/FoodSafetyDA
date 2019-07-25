@@ -8,9 +8,10 @@
 import scrapy
 
 
-class ZhihuItem(scrapy.Item):
+class ZhiHuItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    question=scrapy.Field()
-    keyword=scrapy.Field()
-    content=scrapy.Field()
+    question = scrapy.Field()
+    keyword = scrapy.Field()
+    content = scrapy.Field()
+    pub_date = scrapy.Field()
