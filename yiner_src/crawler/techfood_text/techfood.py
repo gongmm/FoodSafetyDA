@@ -123,7 +123,7 @@ def get_content(news_url):
             news_info['url'] = news_url
             news_info['content'] = content
             return news_info
-        except requests.exceptions.ConnectTimeout as e:
+        except Exception as e:
             print(e)
             print('请求超时！')
             times += 1
@@ -140,7 +140,9 @@ def spider():
     csv_name = 'techfood_text.csv'
     write_header_2csv(des_dir, csv_name)
 
-    for i in range(1377421, 1415411):  # 从1376251到1415410为2018年所有资讯
+    # 1377421
+    # 1378035, 1378061
+    for i in range(1378061, 1415411):  # 从1376251到1415410为2018年所有资讯
         print('——————开始爬取第%d个网页——————' % i)
         news_url = base_url + str(i) + '.htm'
         news_info = get_content(news_url)
