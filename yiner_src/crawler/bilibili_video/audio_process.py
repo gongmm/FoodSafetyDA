@@ -7,6 +7,7 @@ import shutil
 import os.path
 import time
 import pandas as pd
+import math
 
 result_dir = 'csv'
 result_file = 'bilibili_videos.csv'
@@ -87,8 +88,7 @@ def getText(filename, wav):
     csv_path = os.path.join(result_dir, result_file)
     data = pd.read_csv(csv_path, encoding='gbk')
     data.loc[data['aid'] == int(aid), 'content'] = content
-    data.to_csv(csv_path, encoding='gbk')
-    print(data.loc[data['aid'] == int(aid), 'content'])
+    data.to_csv(csv_path, encoding='gbk', index=False)
     print('成功保存内容至csv文件！')
     return content
 
@@ -158,10 +158,17 @@ def audio2text(wav_path):
     if '.DS_Store' in wav_file:
         index = wav_file.index('.DS_Store')
         wav_file.pop(index)
-    for i,wav in enumerate(wav_file): 
+    for i, wav in enumerate(wav_file):
         print(wav)
         # 生成的分割文件夹路径
         newdirname = os.path.join(wav_path, str(i+1))
+
+        # 判定是否已有文本内容，已有则跳过
+        aid = os.path.splitext(wav)[0]
+        csv_path = os.path.join(result_dir, result_file)
+        data = pd.read_csv(csv_path, encoding='gbk')
+        if isinstance(data.loc[data['aid'] == int(aid), 'content'].values[0], str):
+            continue
 
         try:
             # 为每个音频创造一个文件夹存储分割后的音频
