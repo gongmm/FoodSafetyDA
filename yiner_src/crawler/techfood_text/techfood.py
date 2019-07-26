@@ -1,10 +1,7 @@
-import json
 import random
 import time
 import requests
 from bs4 import BeautifulSoup
-from lxml import etree
-import tqdm
 import os
 import csv
 
@@ -53,45 +50,10 @@ headers = {
     'Connection': 'keep-alive',
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': random.choice(UA_LIST),
-
 }
 
+base_url = "https://www.tech-food.com/news/detail/n"
 
-root_url1 = "https://www.tech-food.com/news/c15/list_"
-root_url2 = "https://www.tech-food.com/news/c17/list_"
-base_url = "https://www.tech-food.com"
-
-def get_page_url():
-    """
-    100页的网页链接
-    :return:
-    """
-    url_list = []
-    for i in range(1,101):
-        page_url = root_url1+str(i)+'.html'
-        url_list.append(page_url)
-    for i in range(1,101):
-        page_url = root_url2+str(i)+'.html'
-        url_list.append(page_url)
-    return url_list
-
-def get_news_url(page_url):
-    """
-    获取每一页的新闻链接
-    :param page_url: 页码链接
-    :return: news_url：新闻链接list
-    """
-    print(page_url)
-    html = requests.get(page_url,headers=headers)
-    soup = BeautifulSoup(html.text,'lxml')
-    news_urls = []
-    td = soup.find_all(class_='titleTxt')
-    for t in td:
-        url = base_url + t.find('a').get('href')
-        news_urls.append(url)
-
-    time.sleep(0.5)
-    return news_urls
 
 def get_content(news_url):
     """
@@ -100,57 +62,91 @@ def get_content(news_url):
     :return: news_info：新闻信息，dict类型
     """
     print(news_url)
-    news_info = dict()  #存储新闻内容
-    html = requests.get(news_url,headers=headers)
-    soup = BeautifulSoup(html.text,'lxml')
-    url = news_url
-    title = soup.find(class_='biaoti1').text
-    #print(title)
-    pub = soup.find(class_='biaoti1x').text
-    pubdate = (pub.split(' ')[0]).split('：')[1]
-    #print(pubdate)
+    news_info = dict()  # 存储新闻内容
+    times = 1
+    while True:
+        html = requests.get(news_url, headers=headers)
+        html.encoding = 'utf-8'
+        soup = BeautifulSoup(html.text, 'lxml')
 
-    tag_p = soup.find('div',attrs={'id':'zoom'}).find_all('p')
-    content = ''
-    for p in tag_p:
-        content = content+p.text
-    #print(content)
+        any_div = soup.find('div')
+        if not any_div:  # 网页没加载出来则重新加载
+            times += 1
+            if times >= 5:
+                print('无法加载页面！')
+                return None
+            print('重新加载页面...')
+            continue
 
-    news_info['title'] = title
-    news_info['pubdate'] = pubdate
-    news_info['url'] = url
-    news_info['content'] = content
+        # 找到导航栏中栏目为食品安全的网页，非食品安全的跳过
+        navi_div = soup.find('div', attrs={'id': 'daohan_l'})
+        if not navi_div:  # 网页404
+            return None
+        navi = navi_div.find_all('a')[2].text
+        if not navi == '食品安全':
+            print('不属于食品安全栏目')
+            return None
 
-    time.sleep(0.5)
-    return news_info
+        print('属于食品安全栏目')
+        title = soup.find(class_='biaoti1').text
+        pub = soup.find(class_='biaoti1x').text
+        pubdate = (pub.split()[0]).split('：')[1]
 
-def spider(filename):
-    url_list = get_page_url()
-    with open (filename,'a') as f:
-        writer = csv.writer(f)
-        for page in url_list:
-            news_urls = get_news_url(page)
-            for news in news_urls:
-                news_info = get_content(news)
-            #print(news_info['title'])
-                writer.writerow([news_info['title'],news_info['pubdate'],news_info['url'],news_info['content']])
+        tag_p = soup.find('div', attrs={'id': 'zoom'}).find_all('p')
+        content = ''
+        for p in tag_p:
+            content = content + p.text
+
+        news_info['title'] = title
+        news_info['pubdate'] = pubdate
+        news_info['url'] = news_url
+        news_info['content'] = content
+        return news_info
 
 
-def save_file(filename,news_list):
-    """
-    将爬取到的新闻存入csv文件
-    :param filename:
-    :param news_list:
-    :return:
-    """
-    with open(filename,'a') as f:
-        writer = csv.writer(f)
-        for news in news_list:
-            writer.writerow(news_list['title'],news_list['pubdate'],news_list['url'],news_list['content'])
+def spider():
+    print('——————开始爬取食品科技网的资讯——————')
+    food_news = []
+    des_dir = 'csv'
+    csv_name = 'techfood_text.csv'
+    write_header_2csv(des_dir, csv_name)
+
+    for i in range(1376251, 1415411):  # 从1376251到1415410为2018年所有资讯
+        print('——————开始爬取第%d个网页——————' % i)
+        news_url = base_url + str(i) + '.htm'
+        news_info = get_content(news_url)
+        if news_info:
+            food_news.append(news_info)
+            if i % 30 == 0 or i == 1415410:
+                write2csv(food_news, des_dir, csv_name)
+                food_news = []
+        time.sleep(3)
+        print('——————结束爬取——————')
+
+    print('——————————完成——————————')
+
+
+def write_header_2csv(des_dir, csv_name):
+    if des_dir not in os.listdir():
+        os.mkdir(des_dir)
+    path = os.path.join(des_dir, csv_name)
+    header = ['title', 'pubdate', 'url', 'content']
+    with open(path, 'a', newline='', encoding='utf-8') as f:
+        w = csv.writer(f)
+        w.writerow(header)
+
+
+def write2csv(food_news, des_dir, csv_name):
+    if des_dir not in os.listdir():
+        os.mkdir(des_dir)
+    path = os.path.join(des_dir, csv_name)
+    with open(path, 'a', newline='', encoding='utf-8') as f:
+        w = csv.writer(f)
+        for news_info in food_news:
+            w.writerow([news_info['title'], news_info['pubdate'],
+                        news_info['url'], news_info['content']])
+    print('成功写入csv文件！')
 
 
 if __name__ == '__main__':
-    #get_news_url()
-    #get_page_url()
-    #get_content('https://www.tech-food.com/news/detail/n1421634.htm')
-    spider('techfood.csv')
+    spider()
