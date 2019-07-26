@@ -54,6 +54,22 @@ headers = {
 
 base_url = "https://www.tech-food.com/news/detail/n"
 
+def get_ip_list(path):
+    with open(path, 'r') as f:
+        proxies_list = f.readlines()
+        return proxies_list
+
+ip_list = get_ip_list('proxy.txt')
+index = 0
+
+def get_ip():
+    global index
+    proxy_ip = 'http://' + ip_list[index][:-1]
+    proxies = {'http': proxy_ip}
+    index = (index+1) % len(ip_list)
+    return proxies
+
+proxies = get_ip()
 
 def get_content(news_url):
     """
@@ -65,43 +81,56 @@ def get_content(news_url):
     news_info = dict()  # 存储新闻内容
     times = 1
     while True:
-        html = requests.get(news_url, headers=headers)
-        html.encoding = 'utf-8'
-        soup = BeautifulSoup(html.text, 'lxml')
+        try:
+            global proxies
+            if times >= 2:
+                proxies = get_ip()
+                print('已重新获取ip\n', proxies)
+            html = requests.get(news_url, headers=headers, verify=False, proxies=proxies, timeout=5)
+            html.encoding = 'utf-8'
+            soup = BeautifulSoup(html.text, 'lxml')
 
-        any_div = soup.find('div')
-        if not any_div:  # 网页没加载出来则重新加载
-            times += 1
-            if times >= 5:
-                print('无法加载页面！')
+            any_div = soup.find('div')
+            if not any_div:  # 网页没加载出来则重新加载
+                times += 1
+                if times >= 5:
+                    print('无法加载页面！')
+                    return None
+                print('重新加载页面...')
+                continue
+
+            # 找到导航栏中栏目为食品安全的网页，非食品安全的跳过
+            navi_div = soup.find('div', attrs={'id': 'daohan_l'})
+            if not navi_div:  # 网页404
                 return None
-            print('重新加载页面...')
-            continue
+            navi = navi_div.find_all('a')[2].text
+            if not navi == '食品安全':
+                print('不属于食品安全栏目')
+                return None
 
-        # 找到导航栏中栏目为食品安全的网页，非食品安全的跳过
-        navi_div = soup.find('div', attrs={'id': 'daohan_l'})
-        if not navi_div:  # 网页404
-            return None
-        navi = navi_div.find_all('a')[2].text
-        if not navi == '食品安全':
-            print('不属于食品安全栏目')
-            return None
+            print('属于食品安全栏目')
+            title = soup.find(class_='biaoti1').text
+            pub = soup.find(class_='biaoti1x').text
+            pubdate = (pub.split()[0]).split('：')[1]
 
-        print('属于食品安全栏目')
-        title = soup.find(class_='biaoti1').text
-        pub = soup.find(class_='biaoti1x').text
-        pubdate = (pub.split()[0]).split('：')[1]
+            tag_p = soup.find('div', attrs={'id': 'zoom'}).find_all('p')
+            content = ''
+            for p in tag_p:
+                content = content + p.text
 
-        tag_p = soup.find('div', attrs={'id': 'zoom'}).find_all('p')
-        content = ''
-        for p in tag_p:
-            content = content + p.text
-
-        news_info['title'] = title
-        news_info['pubdate'] = pubdate
-        news_info['url'] = news_url
-        news_info['content'] = content
-        return news_info
+            news_info['title'] = title
+            news_info['pubdate'] = pubdate
+            news_info['url'] = news_url
+            news_info['content'] = content
+            return news_info
+        except requests.exceptions.ConnectTimeout as e:
+            print(e)
+            print('请求超时！')
+            times += 1
+        finally:
+            if times >= 7:
+                print('无法请求页面！')
+                return None
 
 
 def spider():
@@ -111,13 +140,13 @@ def spider():
     csv_name = 'techfood_text.csv'
     write_header_2csv(des_dir, csv_name)
 
-    for i in range(1376251, 1415411):  # 从1376251到1415410为2018年所有资讯
+    for i in range(1377421, 1415411):  # 从1376251到1415410为2018年所有资讯
         print('——————开始爬取第%d个网页——————' % i)
         news_url = base_url + str(i) + '.htm'
         news_info = get_content(news_url)
         if news_info:
             food_news.append(news_info)
-            if i % 30 == 0 or i == 1415410:
+            if len(food_news) % 10 == 0 or i == 1415410:
                 write2csv(food_news, des_dir, csv_name)
                 food_news = []
         time.sleep(3)

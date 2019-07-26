@@ -9,6 +9,7 @@ import time
 
 result_dir = 'words_result'
 
+
 def init_client():
     """
     初始设置
@@ -21,6 +22,7 @@ def init_client():
     client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
     return client
 
+
 def wav2pcm(wav_path):
     """批量转换文件夹中的wav文件为pcm文件"""
     wav_file = os.listdir(wav_path)
@@ -30,12 +32,13 @@ def wav2pcm(wav_path):
 
     # 保证文件顺序是正确的
     wav_file.sort()
-    #print(wav_file)
+    # print(wav_file)
 
     for i, wav in enumerate(wav_file):
         wav_name = os.path.join(wav_path, wav)
-        os.system('ffmpeg -y  -i '+ wav_name +'  -acodec pcm_s16le -f s16le -ac 1 -ar 16000 ' + wav_path + '/' + str(i) + '.pcm')
-        os.remove(wav_name) # 删除文件夹中的wav文件
+        os.system('ffmpeg -loglevel quiet -y  -i '+ wav_name +'  -acodec pcm_s16le -f s16le -ac 1 -ar 16000 ' + wav_path + '/' + str(i) + '.pcm')
+        os.remove(wav_name)  # 删除文件夹中的wav文件
+
 
 def pcm2word(filepath,client):
     """
@@ -46,20 +49,20 @@ def pcm2word(filepath,client):
     :param client:  初始化client
     :return: 识别的文字
     """
-    #client = init_client()
+    # client = init_client()
     with open(filepath,'rb') as f:
         file = f.read()
     result = client.asr(file, 'pcm', 16000, {
         'dev_pid': 1537,   # 1536无标点
     })
-    #print(result)
+    # print(result)
 
     if result['err_no']==0: #若无错误
         text = result['result'][0]  #读取识别结果
-        #print(text)
+        # print(text)
         return text
     else:
-        #print('错误编号%d'%result['err_no'])
+        # print('错误编号%d'%result['err_no'])
         return ''
 
 def getText(filename, wav):
@@ -73,7 +76,7 @@ def getText(filename, wav):
 
     # 保证文件顺序是正确的
     pcm_file.sort()
-    #print(pcm_file)
+    # print(pcm_file)
 
     content = ''
     for i, pcm in enumerate(pcm_file):
@@ -85,6 +88,7 @@ def getText(filename, wav):
     with open(os.path.join(result_dir, result_file),'w') as f:
         f.write(content)
     return content
+
 
 def cut_wav(wav_name, cutdir_name):
     """
@@ -115,9 +119,9 @@ def cut_wav(wav_name, cutdir_name):
     wave_data = wave_data.T
     temp_data = wave_data.T
 
-    StepNum = cutframenum   #步长
-    StepTotalNum = 0   #采样帧数计数
-    count = 0   #计数器
+    StepNum = cutframenum   # 步长
+    StepTotalNum = 0   # 采样帧数计数
+    count = 0   # 计数器
 
     # 对音频文件进行分割
     while StepTotalNum < nframes:
@@ -125,8 +129,8 @@ def cut_wav(wav_name, cutdir_name):
         FileName = os.path.join(cutdir_name, str(count) + '.wav')
 
         temp_dataTemp = temp_data[StepNum * (count):StepNum * (count + 1)]
-        count = count + 1;
-        StepTotalNum = count * StepNum;
+        count = count + 1
+        StepTotalNum = count * StepNum
         temp_dataTemp.shape = 1, -1
         temp_dataTemp = temp_dataTemp.astype(np.short)  # 打开WAV文档
         f = wave.open(FileName, "wb")
@@ -137,6 +141,7 @@ def cut_wav(wav_name, cutdir_name):
         # 将wav_data转换为二进制数据写入文件
         f.writeframes(temp_dataTemp.tostring())
         f.close()
+
 
 def del_file(path):
     """删除指定目录和目录下的所有文件"""
@@ -180,19 +185,21 @@ def audio2text(wav_path):
         except Exception as err:
             print(err)
         finally:
-            #删除生成的文件夹
+            # 删除生成的文件夹
             del_file(newdirname)
+
 
 def audio_process(wav_path):
     """处理音频"""
     print('提取文字开始')
-     #创建一个文件夹存放识别结果
+
+    # 创建一个文件夹存放识别结果
     if result_dir not in os.listdir():
         os.mkdir(result_dir)
     audio2text(wav_path)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     print('________________________________')
     print('音频识别开始')
     t_begin = time.time()
