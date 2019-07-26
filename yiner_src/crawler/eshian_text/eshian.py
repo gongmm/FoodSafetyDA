@@ -7,10 +7,10 @@ from lxml import etree
 import tqdm
 import os
 import csv
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.common.by import By
+# from selenium import webdriver
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions
+# from selenium.webdriver.common.by import By
 
 UA_LIST = [
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
@@ -64,13 +64,13 @@ base_url = "http://www.eshian.com"
 download_baseurl = "http://www.eshian.com/sat/standard/standardinfodown/"
 
 page_url = 'http://www.eshian.com/sat/foodinformation/hync/articlelist/17/453/1'
+
 #chrome_driver = '/Users/yiner/anaconda3/lib/python3.6/site-packages/selenium/webdriver/chrome/chromedriver'
 #browser = webdriver.Chrome(executable_path=chrome_driver)
 #option = webdriver.ChromeOptions()
 #option.add_argument('--proxy=49.86.182.111:9999')
 #option.add_argument('--proxy-server=http://27.208.29.151:8060')
 #option.add_argument('--proxy-type=http')
-
 #browser = webdriver.Chrome(options=option)
 
 def get_ip_list(path):
@@ -78,7 +78,7 @@ def get_ip_list(path):
         proxies_list = f.readlines()
         return proxies_list
 
-ip_list = get_ip_list('proxy6.txt')
+ip_list = get_ip_list('proxy.txt')
 index = 0  
 
 def get_ip():
@@ -257,4 +257,3 @@ def write2csv(food_news, des_dir, csv_name):
 
 if __name__ == '__main__':
     food_news = spider(40, 80)
-    browser.quit()
