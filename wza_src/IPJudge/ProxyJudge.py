@@ -3,7 +3,7 @@ import requests
 
 def get_ip():
     proxy_list = []
-    with open('proxy7.txt', 'r') as f:
+    with open('proxy.txt', 'r') as f:
         for line in f.readlines():
             proxy_list.append(line.strip('\n'))
     return proxy_list
