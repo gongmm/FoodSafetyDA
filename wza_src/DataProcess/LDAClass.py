@@ -155,8 +155,8 @@ class LDAClass:
 
 
 if __name__ == '__main__':
-    lda_class = LDAClass(corpus_file='corpus/food_news_corpus.txt')
-    # lda_class = LDAClass()
+    # lda_class = LDAClass(corpus_file='corpus/food_news_corpus.txt')
+    lda_class = LDAClass()
     # 训练LDA模型
     lda_class.train()
     # 获得话题的对应特征词
