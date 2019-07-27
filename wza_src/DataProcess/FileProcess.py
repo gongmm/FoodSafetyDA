@@ -8,12 +8,12 @@ import re
 class FileProcess:
     """
     读取csv保存为单独的txt文件
-    将csv中的每一行保存为txt/*/nlp_test_i.txt文件
+    将csv中的每一行保存为txt/*/nlp_content_text_i.txt文件
     """
 
     @staticmethod
     def csv_to_single_txt(readfile, writefile):
-        with open(readfile, 'rb') as csv_file:
+        with open(readfile, 'r', encoding='utf-8') as csv_file:
             reader = csv.DictReader(csv_file)
             content_list = [row['content'] for row in reader]
             i = 1
@@ -109,8 +109,10 @@ class FileProcess:
 
 if __name__ == '__main__':
     # 把所有的文本都集合在这个food_news_corpus里
-    corpus_result = FileProcess.make_corpus_from_dir('data/food_nlp_text/', 'corpus/food_news_corpus.txt')
-    print(len(corpus_result))
+    # FileProcess.csv_to_single_txt('test.csv', 'data')
+    FileProcess.make_corpus_from_dir('data/', 'corpus/test_corpus.txt')
+    # corpus_result = FileProcess.make_corpus_from_dir('data/food_nlp_text/', 'corpus/food_news_corpus.txt')
+    # print(len(corpus_result))
 
     # shipin_test()
 
