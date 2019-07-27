@@ -162,3 +162,4 @@ wza_src/YEDDA-new/shipintest
 wza_src/YEDDA-new/tex2pdf
 *.gitkeep
 wza_src/YEDDA-new/*.png
+wza_src/DataProcess/*.csv
