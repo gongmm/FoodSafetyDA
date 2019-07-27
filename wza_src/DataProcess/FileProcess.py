@@ -15,7 +15,7 @@ class FileProcess:
     def csv_to_single_txt(readfile, writefile):
         with open(readfile, 'r', encoding='utf-8') as csv_file:
             reader = csv.DictReader(csv_file)
-            content_list = [row['content'] for row in reader]
+            content_list = [row['title'] + row['content'] for row in reader]
             i = 1
             for content in content_list:
                 print(content)
@@ -63,7 +63,7 @@ class FileProcess:
             # 打开目录下包含的文档
             with open(child, encoding='utf-8') as child_file:
                 res = child_file.read()
-                res = re.sub('[０-９]', '', res)
+                res = re.sub('[0-9a-zA-Z]', '', res)
                 # 分词
                 row_list = [eachWord for eachWord in jieba.cut(res)]
                 # 文档内容去掉停用词后的结果
@@ -109,7 +109,7 @@ class FileProcess:
 
 if __name__ == '__main__':
     # 把所有的文本都集合在这个food_news_corpus里
-    # FileProcess.csv_to_single_txt('test.csv', 'data')
+    FileProcess.csv_to_single_txt('test.csv', 'data')
     FileProcess.make_corpus_from_dir('data/', 'corpus/test_corpus.txt')
     # corpus_result = FileProcess.make_corpus_from_dir('data/food_nlp_text/', 'corpus/food_news_corpus.txt')
     # print(len(corpus_result))
