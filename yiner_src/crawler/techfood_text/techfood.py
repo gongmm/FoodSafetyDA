@@ -59,7 +59,7 @@ def get_ip_list(path):
         proxies_list = f.readlines()
         return proxies_list
 
-ip_list = get_ip_list('proxy.txt')
+ip_list = get_ip_list('proxy1.txt')
 index = 0
 
 def get_ip():
@@ -142,7 +142,12 @@ def spider():
 
     # 1377421
     # 1378035, 1378061
-    for i in range(1378061, 1415411):  # 从1376251到1415410为2018年所有资讯
+    # 1379705
+    # 1380876, 1380881
+    # 1400458, 1400459
+    # 1405000, 1410000 yiner
+    # 1410000, 1415411 zang
+    for i in range(1400459, 1405000):  # 从1376251到1415410为2018年所有资讯
         print('——————开始爬取第%d个网页——————' % i)
         news_url = base_url + str(i) + '.htm'
         news_info = get_content(news_url)
@@ -151,7 +156,7 @@ def spider():
             if len(food_news) % 10 == 0 or i == 1415410:
                 write2csv(food_news, des_dir, csv_name)
                 food_news = []
-        time.sleep(3)
+        time.sleep(2)
         print('——————结束爬取——————')
 
     print('——————————完成——————————')
