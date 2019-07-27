@@ -4,7 +4,7 @@ import re
 
 def html_to_text(readfile, writefile):
     with open(readfile, 'r', encoding='gbk') as f:
-        with open(writefile, 'w', encoding='gbk', newline='') as f1:
+        with open(writefile, 'w', encoding='utf-8', newline='') as f1:
             rows = csv.reader(f)
             writer = csv.writer(f1)
             for row in rows:
