@@ -26,7 +26,7 @@ class LDAClass:
     def get_corpus(self):
         """ 读取txt文件里面的内容建立语料库"""
         with open(self.corpus_file, 'r', encoding='UTF-8') as file:
-            for line in file.readlines()[:20001]:
+            for line in file.readlines()[:10001]:
                 self.corpus.append(line.strip())
         # print(self.corpus)
 
