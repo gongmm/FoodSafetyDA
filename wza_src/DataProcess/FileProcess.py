@@ -6,16 +6,25 @@ import re
 
 
 class FileProcess:
-    """
-    读取csv保存为单独的txt文件
-    将csv中的每一行保存为txt/*/nlp_test_i.txt文件
-    """
+
+    @staticmethod
+    def gbk_2_utf(readfile, writefile):
+        """ 读取gbk格式的文件转码为utf-8格式"""
+        writefile = open(writefile, 'w', encoding='utf-8')
+        with open(readfile, 'r', encoding="GB18030") as f:
+            for row in f:
+                row = row.encode("utf-8").decode("utf-8")
+                writefile.write(row)
 
     @staticmethod
     def csv_to_single_txt(readfile, writefile):
-        with open(readfile, 'rb') as csv_file:
+        """
+            读取csv保存为单独的txt文件
+            将csv中的每一行保存为txt/*/nlp_content_text_i.txt文件
+        """
+        with open(readfile, 'r', encoding='utf-8') as csv_file:
             reader = csv.DictReader(csv_file)
-            content_list = [row['content'] for row in reader]
+            content_list = [row['title'] + row['content'] for row in reader]
             i = 1
             for content in content_list:
                 print(content)
@@ -23,7 +32,7 @@ class FileProcess:
                 document_cut = jieba.cut(content)
                 result = ''.join(document_cut)
                 result.encode('utf-8')
-                with open(writefile + '/nlp_test' + str(i) + '.txt', 'w', encoding='utf-8') as txt_file:
+                with open(writefile + '/news_content' + str(i) + '.txt', 'w', encoding='utf-8') as txt_file:
                     txt_file.write(result)
                     txt_file.close()
                 i = i + 1
@@ -58,12 +67,13 @@ class FileProcess:
         corpus = []
         path_dir = os.listdir(root)
         print(path_dir)
-        for all_dir in path_dir:
+        # 对文件名按照数字进行排序
+        for all_dir in sorted(path_dir, key=lambda x:int(x[12:-4])):
             child = os.path.join('%s%s' % (root, all_dir))
             # 打开目录下包含的文档
             with open(child, encoding='utf-8') as child_file:
                 res = child_file.read()
-                res = re.sub('[０-９]', '', res)
+                res = re.sub('[0-9a-zA-Z]', '', res)
                 # 分词
                 row_list = [eachWord for eachWord in jieba.cut(res)]
                 # 文档内容去掉停用词后的结果
@@ -109,16 +119,9 @@ class FileProcess:
 
 if __name__ == '__main__':
     # 把所有的文本都集合在这个food_news_corpus里
-    corpus_result = FileProcess.make_corpus_from_dir('data/food_nlp_text/', 'corpus/food_news_corpus.txt')
+    # FileProcess.gbk_2_utf('all_news_data.csv', 'all_news_data_utf.csv')
+    # FileProcess.csv_to_single_txt('all_news_data_utf.csv', 'data/')
+    corpus_result = FileProcess.make_corpus_from_dir('data/', 'corpus/news_content_corpus.txt')
     print(len(corpus_result))
-
-    # shipin_test()
-
-    # readdirFile('./txt/digouyou/')
-    # readdirFile('./txt/dudouya/')
-    # readdirFile('./txt/gedami/')
-    # readdirFile('./txt/gongye/')
-    # readdirFile('./txt/sanju/')
-    # readdirFile('./txt/shouroujing/')
-    # readdirFile('./txt/suhuaji/')
-    # topicAnalyze()
+    corpus_file = open('corpus/news_content_corpus.txt', 'r', encoding="utf-8")
+    print(len(corpus_file.readlines()))
