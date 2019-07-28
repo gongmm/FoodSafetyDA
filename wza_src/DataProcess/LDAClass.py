@@ -27,7 +27,8 @@ class LDAClass:
     def get_corpus(self):
         """ 读取txt文件里面的内容建立语料库"""
         with open(self.corpus_file, 'r', encoding='UTF-8') as file:
-            for line in file.readlines()[:10000]:
+            # for line in file.readlines()[:10000]:
+            for line in file.readlines():
                 self.corpus.append(line.strip())
         # print(self.corpus)
 
@@ -97,6 +98,7 @@ class LDAClass:
                         row.append(topic_most_pr)
                         # 添加行
                         writer.writerow(row)
+                    # elif n <= 10000:
                     else:
                         # 选择最可能的主题，对文档进行标记
                         topic_most_pr = doc_topic[n - 1].argmax()
