@@ -106,6 +106,8 @@ def get_page_url(category_url):
     soup = BeautifulSoup(html.text, 'lxml')
     page_urls = []
     pageNum = soup.find(class_='pageNum')
+    if pageNum is None:
+        return page_urls
     tag_a = pageNum.find_all('a')
     # print(len(tag_a))
     for i in range(1, len(tag_a) - 1):
@@ -182,7 +184,9 @@ def spider():
                     news_list.append(news_info)
                 else:
                     pass
-    return news_list
+        save_file('cfsn_news.csv', news_list)
+        # 清空
+        news_list = []
 
 
 def save_file(filename, news_list):
@@ -199,8 +203,8 @@ def save_file(filename, news_list):
 
 
 if __name__ == '__main__':
-    news_list = spider()
-    save_file('cfsn_news.csv', news_list)
+    spider()
+
     # get_category_url()
     # get_page_url('http://www.cfsn.cn/front/web/site.hangye?hyid=1&page=1')
     # get_content('http://www.cfsn.cn/front/web/site.newshow?hyid=1&newsid=932')
