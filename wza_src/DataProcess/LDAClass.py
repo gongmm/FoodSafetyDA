@@ -159,7 +159,7 @@ if __name__ == '__main__':
     # lda_class = LDAClass(corpus_file='corpus/food_news_corpus.txt')
     lda_class = LDAClass()
     # 训练LDA模型
-    if len(sys.argv) > 0:
+    if len(sys.argv) > 1:
         lda_class.train()
     # 获得话题的对应特征词
     lda_class.get_topic_word()
