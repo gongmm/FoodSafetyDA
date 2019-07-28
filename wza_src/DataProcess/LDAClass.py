@@ -26,7 +26,7 @@ class LDAClass:
     def get_corpus(self):
         """ 读取txt文件里面的内容建立语料库"""
         with open(self.corpus_file, 'r', encoding='UTF-8') as file:
-            for line in file.readlines()[:10001]:
+            for line in file.readlines()[:10000]:
                 self.corpus.append(line.strip())
         # print(self.corpus)
 
@@ -149,7 +149,7 @@ class LDAClass:
         print("======开始lda=====")
 
         '''LDA模型调用'''
-        lda_model = lda.LDA(n_topics=106, n_iter=1000, random_state=1)
+        lda_model = lda.LDA(n_topics=106, n_iter=100, random_state=1)
         lda_model.fit(weight)
         joblib.dump(lda_model, self.lda_model_file)
 
