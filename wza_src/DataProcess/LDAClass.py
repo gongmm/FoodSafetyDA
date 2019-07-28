@@ -9,6 +9,7 @@ from sklearn.externals import joblib
 from sklearn import metrics
 import numpy as np
 import lda
+import sys
 
 
 class LDAClass:
@@ -158,7 +159,8 @@ if __name__ == '__main__':
     # lda_class = LDAClass(corpus_file='corpus/food_news_corpus.txt')
     lda_class = LDAClass()
     # 训练LDA模型
-    lda_class.train()
+    if len(sys.argv) > 0:
+        lda_class.train()
     # 获得话题的对应特征词
     lda_class.get_topic_word()
     # 在新闻文档中添加话题标签
