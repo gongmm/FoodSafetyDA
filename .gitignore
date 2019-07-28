@@ -1,4 +1,4 @@
-﻿# ignore data & result of wqm_src
+# ignore data & result of wqm_src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -166,3 +166,4 @@ venv.bak/
 .mypy_cache/
 dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
 *.rar
+*.pdf
