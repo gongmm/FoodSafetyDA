@@ -146,7 +146,17 @@ class LDAClass:
         # 获取词袋模型中所有特征词，关键词
         word = vectorizer.get_feature_names()
         joblib.dump(word, self.feature_names_model_file)
-        # 词频矩阵，行为文档中的行，列为各个特征词
+        # # 词频矩阵，行为文档中的行，列为各个特征词
+        # weight = np.zeros()
+        # row_num = x.shape[0]
+        # col_num = x.shape[1]
+        # index = 0
+        # for i in range(row_num):
+        #     row = np.zeros(col_num)
+        #     for k in range(x.indptr[i], x.indptr[i+1]):
+        #         row[x.indices[k]] = x.data[k]
+        #     #index += len(set(self.corpus[i]))
+        #     weight.append(row)
         weight = x.toarray()
         # weight = np.array(x)
         print("======开始lda=====")
