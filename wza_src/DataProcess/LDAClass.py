@@ -15,11 +15,11 @@ import sys
 class LDAClass:
 
     def __init__(self, n_topic=36, corpus_file='corpus/news_content_corpus.txt',
-                 lda_model_file='model/lda.model', lda_sk_model_file='model/lda_sk.model', feature_names_model_file='model/feature.model'):
+                 lda_model_file='model/lda.model',
+                 feature_names_model_file='model/feature.model'):
         self.corpus = []
         self.corpus_file = corpus_file
         self.lda_model_file = lda_model_file
-        self.lda_sk_model_file = lda_sk_model_file
         self.feature_names_model_file = feature_names_model_file
         self.n_topic = n_topic
 
@@ -42,16 +42,16 @@ class LDAClass:
         if lda_model is None:
             return
         # 主题-词分布
-        topic_word = lda_model.topic_word_
+        # topic_word = lda_model.topic_word_
         word = joblib.load(self.feature_names_model_file)
-        for i, topic_dist in enumerate(topic_word):
-            topic_words = np.array(word)[np.argsort(topic_dist)][:-(n_top_words + 1):-1]
-            print(u'*Topic {}\n- {}'.format(i, ' '.join(topic_words)))
+        # for i, topic_dist in enumerate(topic_word):
+        #     topic_words = np.array(word)[np.argsort(topic_dist)][:-(n_top_words + 1):-1]
+        #     print(u'*Topic {}\n- {}'.format(i, ' '.join(topic_words)))
 
-        # for topic_idx, topic in enumerate(lda_model.components_):
-        #     print("Topic #%d:" % topic_idx)
-        #     print(" ".join([word[i]
-        #                     for i in topic.argsort()[:-n_top_words - 1:-1]]))
+        for topic_idx, topic in enumerate(lda_model.components_):
+            print("Topic #%d:" % topic_idx)
+            print(" ".join([word[i]
+                            for i in topic.argsort()[:-n_top_words - 1:-1]]))
 
     def lda_kmeans(self):
         """lda+kmeans"""
@@ -176,27 +176,19 @@ class LDAClass:
         """利用 sklearn 中的 lda 模型进行训练"""
         print("======生成语料=====")
         self.get_corpus()
-        # vector = TfidfVectorizer()
-        # tfidf = vector.fit_transform(self.corpus)
-        # print(tfidf)
-        # wordlist = vector.get_feature_names()  # 获取词袋模型中的所有词
-        # # tf-idf矩阵 元素a[i][j]表示j词在i类文本中的tf-idf权重
-        # weightlist = tfidf.toarray()
-        # # 打印每类文本的tf-idf词语权重，第一个for遍历所有文本，第二个for便利某一类文本下的词语权重
-        # for i in range(len(weightlist)):
-        #     print("-------第", i, "段文本的词语tf-idf权重------")
-        #     for j in range(len(wordlist)):
-        #         print(wordlist[j], weightlist[i][j])
         print("======向量转化=====")
-        cntVector = CountVectorizer()
-        cntTf = cntVector.fit_transform(self.corpus)
+        cnt_vector = CountVectorizer(max_df=0.95, min_df=2,
+                                     max_features=2000, )
+        cnt_tf = cnt_vector.fit_transform(self.corpus)
+        tf_feature_names = cnt_vector.get_feature_names()
+        joblib.dump(tf_feature_names, self.feature_names_model_file)
         print("======开始lda=====")
         lda = LatentDirichletAllocation(n_components=self.n_topic, max_iter=5,
                                         learning_method='online',
                                         learning_offset=50.,
                                         random_state=1)
-        lda_sk_model = lda.fit_transform(cntTf)
-        joblib.dump(lda_sk_model, self.lda_sk_model_file)
+        lda_sk_model = lda.fit_transform(cnt_tf)
+        joblib.dump(lda_sk_model, self.lda_model_file)
 
     def train(self):
         """lda train"""
@@ -223,12 +215,17 @@ class LDAClass:
 if __name__ == '__main__':
     # lda_class = LDAClass(corpus_file='corpus/food_news_corpus.txt')
     lda_class = LDAClass()
-    # lda_class.sklearn_lda()
-    # 训练LDA模型
     if len(sys.argv) > 1:
-        lda_class.train()
+        if sys.argv[-1] == 'sk':
+            lda_class = LDAClass(lda_model_file='model/lda_sk.model',
+                                 feature_names_model_file='model/feature_sk.model')
+            # 训练LDA模型
+            lda_class.sklearn_lda()
+        else:
+            lda_class.train()
+
     # 获得话题的对应特征词
-    lda_class.save_topic_word()
+    # lda_class.save_topic_word()
     lda_class.print_top_words()
     # 在新闻文档中添加话题标签
     # lda_class.save_topic('result/doc_topic.csv')
