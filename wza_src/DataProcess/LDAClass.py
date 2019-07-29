@@ -3,7 +3,7 @@ import csv
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.cluster import KMeans
 from time import time
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.externals import joblib
 from sklearn import metrics
@@ -32,18 +32,16 @@ class LDAClass:
                 self.corpus.append(line.strip())
         # print(self.corpus)
 
-    '''打印lda主题词'''
-
     def print_top_words(self):
+        """打印lda主题词"""
         for topic_idx, topic in enumerate(self.model.components_):
             print("Topic #%d:" % topic_idx)
             print(" ".join([self.feature_names[i]
                             for i in topic.argsort()[:-self.n_top_words - 1:-1]]))
         print()
 
-    '''lda+kmeans'''
-
     def lda_kmeans(self):
+        """lda+kmeans"""
         # 将文本转为词频矩阵
         # 创建词袋数据结构
         cnt_vector = CountVectorizer(max_features=1000)
@@ -52,7 +50,7 @@ class LDAClass:
         # 所有的特征词，即关键词
         self.cnt_feature = cnt_vector.get_feature_names()
         transformer = TfidfTransformer()
-        tf_idf = transformer.fit_transform(cnt_vector.fit_transform(self.corpus))
+        tf_idf = transformer.fit_transform(cnt_tf)
         tf_idfweight = tf_idf.toarray()
         t0 = time()
         # lda主题聚类
@@ -78,9 +76,8 @@ class LDAClass:
         print(silhouette)
         print("done in %0.3fs." % (time() - t0))  # 运行的时间
 
-    ''' 将每篇doc对应的topic存储'''
-
     def save_topic(self, readfile, writefile):
+        """ 将每篇doc对应的topic存储"""
         lda_model = joblib.load(self.lda_model_file)
         # 文档-主题分布 doc_topic
         doc_topic = lda_model.doc_topic_
@@ -115,9 +112,8 @@ class LDAClass:
                         topic_id = doc_topic[n].argmax()
                         writer.writerow([str(doc_id), str(topic_id)])
 
-    '''将topic存入单独的csv文件'''
-
     def get_topic_word(self):
+        """将topic存入单独的csv文件"""
         lda_model = joblib.load(self.lda_model_file)
         if lda_model is None:
             return
@@ -132,9 +128,35 @@ class LDAClass:
                 csv_writer.writerow([i, ' '.join(topic_words)])
                 print(u'*Topic {}\n- {}'.format(i, ' '.join(topic_words)))
 
-    """lda train"""
+    def sklearn_lda(self):
+        """利用 sklearn 中的 lda 模型进行训练"""
+        print("======生成语料=====")
+        self.get_corpus()
+        # vector = TfidfVectorizer()
+        # tfidf = vector.fit_transform(self.corpus)
+        # print(tfidf)
+        # wordlist = vector.get_feature_names()  # 获取词袋模型中的所有词
+        # # tf-idf矩阵 元素a[i][j]表示j词在i类文本中的tf-idf权重
+        # weightlist = tfidf.toarray()
+        # # 打印每类文本的tf-idf词语权重，第一个for遍历所有文本，第二个for便利某一类文本下的词语权重
+        # for i in range(len(weightlist)):
+        #     print("-------第", i, "段文本的词语tf-idf权重------")
+        #     for j in range(len(wordlist)):
+        #         print(wordlist[j], weightlist[i][j])
+        print("======向量转化=====")
+        cntVector = CountVectorizer()
+        cntTf = cntVector.fit_transform(self.corpus)
+        print("======开始lda=====")
+        lda = LatentDirichletAllocation(n_components=106, max_iter=5,
+                                        learning_method='online',
+                                        learning_offset=50.,
+                                        random_state=0)
+        docres = lda.fit_transform(cntTf)
+        print(lda.components_)
+        print(docres)
 
     def train(self):
+        """lda train"""
         # 读取文件，生成语料
         print("======生成语料=====")
         self.get_corpus()
@@ -146,23 +168,11 @@ class LDAClass:
         # 获取词袋模型中所有特征词，关键词
         word = vectorizer.get_feature_names()
         joblib.dump(word, self.feature_names_model_file)
-        # # 词频矩阵，行为文档中的行，列为各个特征词
-        # weight = np.zeros()
-        # row_num = x.shape[0]
-        # col_num = x.shape[1]
-        # index = 0
-        # for i in range(row_num):
-        #     row = np.zeros(col_num)
-        #     for k in range(x.indptr[i], x.indptr[i+1]):
-        #         row[x.indices[k]] = x.data[k]
-        #     #index += len(set(self.corpus[i]))
-        #     weight.append(row)
+        # 词频矩阵，行为文档中的行，列为各个特征词
         weight = x.toarray()
-        # weight = np.array(x)
         print("======开始lda=====")
-
-        '''LDA模型调用'''
-        lda_model = lda.LDA(n_topics=106, n_iter=100, random_state=1)
+        # LDA模型调用
+        lda_model = lda.LDA(n_topics=36, n_iter=100, random_state=0)
         lda_model.fit(weight)
         joblib.dump(lda_model, self.lda_model_file)
 
@@ -170,6 +180,7 @@ class LDAClass:
 if __name__ == '__main__':
     # lda_class = LDAClass(corpus_file='corpus/food_news_corpus.txt')
     lda_class = LDAClass()
+    # lda_class.sklearn_lda()
     # 训练LDA模型
     if len(sys.argv) > 1:
         lda_class.train()
