@@ -84,6 +84,10 @@ class LDAClass:
 
         print("type(doc_topic):{}".format(type(doc_topic)))
         print("shape:{}".format(doc_topic.shape))
+        # 计算前10篇文档最可能的主题
+        for n in range(10):
+            topic_most_pr = doc_topic[n].argmax()
+            print("doc: {} topic: {}".format(n, topic_most_pr))
         with open(readfile, 'r', encoding='utf-8') as f_read:
             rows = csv.reader(f_read)
             with open(writefile, 'w', encoding='utf-8', newline='') as f_write:
