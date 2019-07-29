@@ -30,6 +30,7 @@ class LDAClass:
             # for line in file.readlines()[:10000]:
             for line in file.readlines():
                 self.corpus.append(line.strip())
+        print(len(self.corpus))
         # print(self.corpus)
 
     def print_top_words(self):
@@ -48,6 +49,7 @@ class LDAClass:
         # 得到元素--词频
         cnt_tf = cnt_vector.fit_transform(self.corpus)
         # 所有的特征词，即关键词
+
         self.cnt_feature = cnt_vector.get_feature_names()
         transformer = TfidfTransformer()
         tf_idf = transformer.fit_transform(cnt_tf)
