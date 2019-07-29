@@ -193,4 +193,4 @@ if __name__ == '__main__':
     # 获得话题的对应特征词
     lda_class.get_topic_word()
     # 在新闻文档中添加话题标签
-    lda_class.save_topic('all_news_data_utf.csv', 'all_news_data_utf_topic.csv')
+    lda_class.save_topic('all_news_data_utf.csv', 'result/all_news_data_utf_topic.csv')
