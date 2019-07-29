@@ -2,14 +2,16 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.decomposition import NMF, LatentDirichletAllocation
 import random
 from time import time
-
-from FileProcess import FileProcess
-
-'''主题困惑度分析'''
-'''读取txt文件里面的内容保存为语料'''
+import pandas as pd
+from matplotlib import pyplot as plt
 
 
 def get_corpus(filepath):
+    """读取txt文件里面的内容保存为语料
+
+    Args:
+        filepath: 读取corpus.txt所在的路径
+    """
     corpus = []
     with open(filepath, 'r', encoding='UTF-8') as f:
         for line in f.readlines():
@@ -44,7 +46,8 @@ def topic_analyze(corpus):
     grid = dict()
     t0 = time()
     # 300个主题，以5为间隔
-    for i in range(1, 300, 5):
+    for i in range(1, 100, 5):
+        print("===== calculate topic num %d =====" % i)
         grid[i] = list()
         n_topics = i
         # 定义lda模型
@@ -57,12 +60,11 @@ def topic_analyze(corpus):
         train_perplexity = lda.perplexity(tf)
         # 计算测试集困惑度
         test_perplexity = lda.perplexity(tf_test)
-        print('sklearn preplexity: train=%.3f' % (train_perplexity))
+        print('sklearn preplexity: train=%.3f , test:%.3f' % (train_perplexity, test_perplexity))
         grid[i].append(train_perplexity)
 
     print("done in %0.3fs." % (time() - t0))
-    import pandas as pd
-    from matplotlib import pyplot as plt
+
     df = pd.DataFrame(grid)
     df.to_csv('sklearn_perplexity.csv')
     print(df)
@@ -76,7 +78,5 @@ def topic_analyze(corpus):
 
 
 if __name__ == '__main__':
-    # food_news_corpus[]
-    res = FileProcess.read_file('corpus/food_news_corpus.txt')
     food_news_corpus = get_corpus('corpus/food_news_corpus.txt')
     topic_analyze(food_news_corpus)
