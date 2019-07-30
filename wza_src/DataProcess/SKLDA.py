@@ -148,7 +148,7 @@ def sklearn_lda_train():
 
 
 if __name__ == '__main__':
-    # sklearn_lda_train()
+    sklearn_lda_train()
     save_topic_word()
     write_doc_topic_to_origin()
     draw_doc_topic()
