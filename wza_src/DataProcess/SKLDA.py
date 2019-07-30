@@ -121,7 +121,7 @@ def sklearn_lda_train():
     print("done in %0.3fs." % (time() - t0))
     print()
     print("======开始sklean_LDA=====")
-    lda = LatentDirichletAllocation(n_components=n_topic, max_iter=5,
+    lda = LatentDirichletAllocation(n_components=n_topic, max_iter=10,
                                     learning_method='online',
                                     learning_offset=50.,
                                     random_state=0)
