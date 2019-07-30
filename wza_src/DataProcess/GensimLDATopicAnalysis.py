@@ -57,10 +57,28 @@ def print_info():
     lda = joblib.load(lda_model_file)
     doc_topic = lda.get_document_topics(common_corpus)
     topics = lda.print_topics(num_topics=n_topic, num_words=n_top_words)
-    print(doc_topic)
+
     for topic in topics:
         print(topic)
-    print(topics)
+
+    # 打印每篇文档最高概率主题
+    for i in lda.get_document_topics(common_corpus)[:]:
+        listj = []
+        for j in i:
+            listj.append(j[1])
+        bz = listj.index(max(listj))
+
+        # print(i[bz][0],i,listj,listj.index(max(listj)))
+        print(i[bz][0])
+
+    # corpus_lda = lda[common_corpus]  # 每个文本对应的LDA向量，稀疏的，元素值是隶属与对应序数类的权重
+    # num = 0
+    # for doc in corpus_lda:
+    #     wstr = ""
+    #     for i in range(len(doc)):
+    #         item = doc[i]
+    #         wstr += str(item[0]) + "," + str(item[1])[0:7] + "/"
+    #     num += 1
 
 
 if __name__ == '__main__':
