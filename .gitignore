@@ -48,6 +48,9 @@ wza_src/YEDDA-new/tex2pdf
 wza_src/YEDDA-new/*.png
 wza_src/DataProcess/*.csv
 wza_src/DataProcess/model/*
+wza_src/DataProcess/topic_doc/*
+wza_src/DataProcess/cluster/*
+wza_src/DataProcess/vec_arr/*
 
 
 ChineseNER-valid/ckpt/*
