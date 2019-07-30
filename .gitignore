@@ -1,4 +1,4 @@
-# ignore data & result of wqm_src
+﻿# ignore data & result of src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -48,6 +48,13 @@ wza_src/YEDDA-new/tex2pdf
 wza_src/YEDDA-new/*.png
 wza_src/DataProcess/*.csv
 wza_src/DataProcess/model/*
+
+
+ChineseNER-valid/ckpt/*
+ChineseNER-valid/result/*
+ChineseNER-valid/data/*
+ChineseNER-valid/maps.pkl
+ChineseNER-valid/wiki_100.utf8
 
 
 *.gitkeep
