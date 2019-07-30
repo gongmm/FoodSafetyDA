@@ -1,4 +1,4 @@
-# ignore data & result of wqm_src
+﻿# ignore data & result of src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -51,6 +51,13 @@ wza_src/DataProcess/model/*
 wza_src/DataProcess/topic_doc/*
 wza_src/DataProcess/cluster/*
 wza_src/DataProcess/vec_arr/*
+
+
+ChineseNER-valid/ckpt/*
+ChineseNER-valid/result/*
+ChineseNER-valid/data/*
+ChineseNER-valid/maps.pkl
+ChineseNER-valid/wiki_100.utf8
 
 
 *.gitkeep
