@@ -19,7 +19,7 @@ def get_corpus():
     """ 读取txt文件里面的内容建立语料库"""
     with open(corpus_file, 'r', encoding='UTF-8') as file:
         for line in file.readlines():
-            corpus.append(line.strip())
+            corpus.append(line.strip().split())
     print(len(corpus))
 
 

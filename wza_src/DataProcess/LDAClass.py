@@ -44,7 +44,7 @@ class LDAClass:
             topic_words = np.array(word)[np.argsort(topic_dist)][:-(n_top_words + 1):-1]
             print(u'*Topic {}\n- {}'.format(i, ' '.join(topic_words)))
 
-    def save_topic(self, writefile):
+    def save_topic(self, writefile='result/doc_topic.csv'):
         """ 将每篇doc对应的topic存储 [doc_id, topic_id]
             doc_id 从1开始
             topic_id 从0开始
@@ -195,10 +195,10 @@ if __name__ == '__main__':
         lda_class.train()
 
     # 获得话题的对应特征词
-    # lda_class.save_topic_word()
+    lda_class.save_topic_word()
     lda_class.print_top_words()
     # 在新闻文档中添加话题标签
-    lda_class.save_topic('result/doc_topic.csv')
+    lda_class.save_topic()
     lda_class.draw_doc_topic()
     # lda_class.draw_topic_word()
     # lda_class.write_doc_topic_to_origin('all_news_data_utf.csv', 'result/all_news_data_utf_topic.csv')
