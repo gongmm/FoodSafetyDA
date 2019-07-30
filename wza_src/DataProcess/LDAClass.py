@@ -125,6 +125,8 @@ class LDAClass:
 
         plt.tight_layout()
         plt.show()
+        # 保存图片
+        plt.savefig('result/topic_word_lda.png', bbox_inches='tight', pad_inches=0.1)
 
     def draw_doc_topic(self):
         lda_model = joblib.load(self.lda_model_file)
@@ -145,6 +147,8 @@ class LDAClass:
 
         plt.tight_layout()
         plt.show()
+        # 保存图片
+        plt.savefig('result/doc_topic_lda.png', bbox_inches='tight', pad_inches=0.1)
 
     def save_topic_word(self, n_top_words=20, writefile='result/food_topic_word.csv'):
         """将话题关键词存入单独的csv文件 ['topic_id', 'topic_word']

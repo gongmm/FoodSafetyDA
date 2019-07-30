@@ -102,6 +102,8 @@ def draw_doc_topic():
 
     plt.tight_layout()
     plt.show()
+    # 保存图片
+    plt.savefig('result/doc_topic_sk.png', bbox_inches='tight', pad_inches=0.1)
 
 
 def sklearn_lda_train():

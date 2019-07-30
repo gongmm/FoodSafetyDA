@@ -28,12 +28,20 @@ def gensim_lda_train():
     t0 = time()
     get_corpus()
     print("done in %0.3fs." % (time() - t0))
+    print("To Dictionary...")
+    t0 = time()
     dictionary = corpora.Dictionary(corpus)
     common_corpus = [dictionary.doc2bow(text) for text in corpus]
+    print("done in %0.3fs." % (time() - t0))
+    print("TF-IDF...")
+    t0 = time()
     tfidf = models.TfidfModel(common_corpus)
     corpus_tfidf = tfidf[common_corpus]
-    # Run the LDA model for XX topics
+    print("done in %0.3fs." % (time() - t0))
+    print("Run the LDA model ...")
+    t0 = time()
     lda = LdaModel(corpus=corpus_tfidf, id2word=dictionary, num_topics=n_topic, passes=10)
+    print("done in %0.3fs." % (time() - t0))
     doc_topic = [a for a in lda[corpus]]
     topics_r = lda.print_topics(num_topics=n_topic, num_words=n_top_words)
 
