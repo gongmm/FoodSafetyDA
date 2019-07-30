@@ -42,7 +42,7 @@ wza_src/crawler/**/*.png
 wza_src/crawler/**/*.xlsx
 wza_src/crawler/**/*.json
 wza_src/ChineseNER/wiki_100.utf8
-wza_src/YEDDA-new/demotext
+wza_src/YEDDA-new/food_data
 wza_src/YEDDA-new/shipintest
 wza_src/YEDDA-new/tex2pdf
 wza_src/YEDDA-new/*.png
