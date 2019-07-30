@@ -54,6 +54,7 @@ wza_src/DataProcess/vec_arr/*
 
 
 ChineseNER-valid/ckpt/*
+ChineseNER-valid/ckpt-地点/*
 ChineseNER-valid/result/*
 ChineseNER-valid/data/*
 ChineseNER-valid/maps.pkl
