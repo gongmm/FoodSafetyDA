@@ -1,6 +1,36 @@
-def cut_file():
-    with open("data/food.train", "r", encoding="utf-8") as food_dev_file:
-        with open("data/new_food.train", "a+", encoding="utf-8") as write_file:
+import os
+
+file_path = "anns_data/"
+origin_train_path = "data/food.train"
+origin_test_path = "data/food.test"
+origin_dev_path = "data/food.dev"
+
+def split_train_test_dev():
+    path_dir = os.listdir(file_path)
+    sum_num = len(path_dir)
+    for index, filename in enumerate(path_dir):
+        child = os.path.join('%s%s' % (file_path, filename))
+        # 划分训练/测试/开发集
+        if index < sum_num * 0.7:
+            with open(origin_train_path, 'a+', encoding='utf-8') as fw:
+                with open(child, 'r', encoding='utf-8') as fr:
+                    anns = fr.read()
+                fw.write(anns)
+        elif sum_num * 0.7 <= index < sum_num * 0.9:
+            with open(origin_test_path, 'a+', encoding='utf-8') as fw:
+                with open(child, 'r', encoding='utf-8') as fr:
+                    anns = fr.read()
+                fw.write(anns)
+        elif index > sum_num * 0.9:
+            with open(origin_dev_path, 'a+', encoding='utf-8') as fw:
+                with open(child, 'r', encoding='utf-8') as fr:
+                    anns = fr.read()
+                fw.write(anns)
+
+
+def cut_file(readfile, writefile):
+    with open(readfile, "r", encoding="utf-8") as food_dev_file:
+        with open(writefile, "a+", encoding="utf-8") as write_file:
             write_file.truncate()
             begin_line = 0
             end_line = 0
@@ -17,4 +47,7 @@ def cut_file():
 
 
 if __name__ == "__main__":
-    cut_file()
+    split_train_test_dev()
+    cut_file(origin_train_path, "data/new_food.train")
+    cut_file(origin_test_path, "data/new_food.test")
+    cut_file(origin_dev_path, "data/new_food.dev")
