@@ -35,6 +35,7 @@ wza_src/**/result
 wza_src/**/data
 wza_src/**/corpus
 wza_src/CutNews/data
+wza_src/CutNews/anns_data
 wza_src/crawler/**/*.txt
 wza_src/crawler/**/*.csv
 wza_src/crawler/**/*.json
@@ -42,7 +43,7 @@ wza_src/crawler/**/*.png
 wza_src/crawler/**/*.xlsx
 wza_src/crawler/**/*.json
 wza_src/ChineseNER/wiki_100.utf8
-wza_src/YEDDA-new/demotext
+wza_src/YEDDA-new/food_data
 wza_src/YEDDA-new/shipintest
 wza_src/YEDDA-new/tex2pdf
 wza_src/YEDDA-new/*.png
@@ -51,6 +52,7 @@ wza_src/DataProcess/model/*
 wza_src/DataProcess/topic_doc/*
 wza_src/DataProcess/cluster/*
 wza_src/DataProcess/vec_arr/*
+wza_src/DataProcess/data_random/*
 
 
 ChineseNER-valid/ckpt/*
@@ -60,6 +62,9 @@ ChineseNER-valid/data/*
 ChineseNER-valid/maps.pkl
 ChineseNER-valid/wiki_100.utf8
 
+backup/*
+**/backup/*
+**/**/backup/*
 
 *.gitkeep
 
