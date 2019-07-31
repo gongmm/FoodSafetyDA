@@ -245,19 +245,19 @@ class Example(Frame):
             self.setCursorLabel(self.text.index(INSERT))
 
     def onOpenNext(self):
-        self.generateSequenceFile();
+        self.generateSequenceFile()
         fileName = self.getNameLabel()
         # index = fileName.find("fileName:File: ")
         if fileName != '':
             fl = fileName[6:]
-            strIdx = fl.find("nlp_test")
+            strIdx = fl.find("news_content")
             if strIdx >= 0:
                 startNode = fl[0:strIdx]
                 endNode = fl[++strIdx:]
                 num = endNode.find(".")
-                number = endNode[8:num]
-                number = int(number) +1
-                fl = startNode + "nlp_test" + str(number) + ".txt"
+                number = endNode[12:num]
+                number = int(number) + 1
+                fl = startNode + "news_content" + str(number) + ".txt"
             self.text.delete("1.0", END)
             text = self.readFile(fl)
             self.text.insert(END, text)
