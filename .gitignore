@@ -1,4 +1,4 @@
-# ignore data & result of src
+﻿# ignore data & result of src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -184,6 +184,6 @@ dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
 *.rar
 *.pdf
 wza_src/CutNews/anns_data/
-wza_src/CutNews/origin_data/food.dev
 wza_src/CutNews/origin_data/
 wza_src/YEDDA-new/food_data/
+wza_src/YEDDA-new/demotext/
