@@ -2,11 +2,21 @@ import os
 import gensim
 import numpy as np
 import pandas as pd
-import joblib
+from sklearn.externals import joblib
 from scipy.cluster import hierarchy  # 用于进行层次聚类，画层次聚类图的工具包
 import matplotlib.pylab as plt
 import re
 import warnings
+import pickle
+import tensorflow as tf
+
+
+import sys
+sys.path.append('../ChineseNER')  # 添加自己指定的搜索路径
+from model import Model
+import loader
+import utils
+import data_utils
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 
@@ -342,6 +352,22 @@ def hierarchy_cluster(topic_num):
         joblib.dump(matrix, cluster_file)
 
 
+def evaluate_entities(line, config_file='ChineseNER/config_file', log_file='ChineseNER/train.log',
+                      map_file='ChineseNER/maps.pkl', ckpt_path='ChineseNER/ckpt'):
+    config = utils.load_config(config_file)
+    logger = utils.get_logger(log_file)
+    # limit GPU memory
+    tf_config = tf.ConfigProto()
+    tf_config.gpu_options.allow_growth = True
+    with open(map_file, "rb") as f:
+        char_to_id, id_to_char, tag_to_id, id_to_tag = pickle.load(f)
+    with tf.Session(config=tf_config) as sess:
+        model = utils.create_model(sess, Model, ckpt_path, data_utils.load_word2vec, config, id_to_char, logger)
+        while True:
+            result = model.evaluate_line(sess, input_from_line(line, char_to_id), id_to_tag)
+            print(result)
+
+
 def events_detect():
     print("———————————开始提取事件—————————————")
 
@@ -354,11 +380,11 @@ def events_detect():
     print("—————结束训练模型—————")
 
     print("————开始文档向量化————")
-    doc2vec(topic_num)
+    # doc2vec(topic_num)
     print("————结束文档向量化————")
 
     print("—————开始层次聚类—————")
-    hierarchy_cluster(topic_num)
+    # hierarchy_cluster(topic_num)
     print("—————结束层次聚类—————")
 
     print("—————————————结束提取事件———————————")
