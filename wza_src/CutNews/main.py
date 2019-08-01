@@ -15,23 +15,23 @@ def split_train_test_dev():
         if index < sum_num * 0.7:
             with open(origin_train_path, 'a+', encoding='utf-8') as fw:
                 with open(child, 'r', encoding='utf-8') as fr:
-                    anns = re.sub('\n+', '\n', fr.read().strip())
-                if anns == 'O' or anns == '\n':
-                    continue
+                    anns = fr.read()
+                    # re.sub('\n+', '\n', fr.read().strip())
+                    anns = re.sub('\n\s*O\n+', '\n', anns)
                 fw.write(anns)
         elif sum_num * 0.7 <= index < sum_num * 0.9:
             with open(origin_test_path, 'a+', encoding='utf-8') as fw:
                 with open(child, 'r', encoding='utf-8') as fr:
-                    anns = re.sub('\n+', '\n', fr.read().strip())
-                if anns == 'O' or anns == '\n':
-                    continue
+                    anns = fr.read()
+                    # re.sub('\n+', '\n', fr.read().strip())
+                    anns = re.sub('\n\s*O\n+', '\n', anns)
                 fw.write(anns)
         elif index > sum_num * 0.9:
             with open(origin_dev_path, 'a+', encoding='utf-8') as fw:
                 with open(child, 'r', encoding='utf-8') as fr:
-                    anns = re.sub('\n+', '\n', fr.read().strip())
-                if anns == 'O' or anns == '\n':
-                    continue
+                    anns = fr.read()
+                    # re.sub('\n+', '\n', fr.read().strip())
+                    anns = re.sub('\n\s*O\n+', '\n', anns)
                 fw.write(anns)
 
 
