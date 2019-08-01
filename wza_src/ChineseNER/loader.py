@@ -82,7 +82,7 @@ def tag_mapping(sentences):
     Create a dictionary and a mapping of tags, sorted by frequency.
     """
     tags = [[char[-1] for char in s] for s in sentences]
-    dico = create_dico(tags)#该方法会形成一个字典，字典的key是tag标签，value是标签出现的次数
+    dico = create_dico(tags)
     tag_to_id, id_to_tag = create_mapping(dico)
     print("Found %i unique named entity tags" % len(dico))
     return dico, tag_to_id, id_to_tag
@@ -139,15 +139,13 @@ def augment_with_pretrained(dictionary, ext_emb_path, chars):
         for char in pretrained:
             if char not in dictionary:
                 dictionary[char] = 0
-            '''
-            测试语料在词向量中并且该词不在训练词库中
-            '''
+    else:
+        for char in chars:
             if any(x in pretrained for x in [
                 char,
                 char.lower(),
                 re.sub('\d', '0', char.lower())
             ]) and char not in dictionary:
-                #在训练语料中存入该词
                 dictionary[char] = 0
 
     word_to_id, id_to_word = create_mapping(dictionary)
