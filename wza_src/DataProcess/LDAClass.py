@@ -124,9 +124,9 @@ class LDAClass:
         ax[4].set_xlabel("word")
 
         plt.tight_layout()
-        plt.show()
         # 保存图片
-        plt.savefig('result/topic_word_lda.png', bbox_inches='tight', pad_inches=0.1)
+        plt.savefig('result/topic_word_lda.png', bbox_inches='tight')
+        plt.show()
 
     def draw_doc_topic(self):
         lda_model = joblib.load(self.lda_model_file)
@@ -199,7 +199,7 @@ if __name__ == '__main__':
         lda_class.train()
 
     # 获得话题的对应特征词
-    lda_class.save_topic_word()
+    # lda_class.save_topic_word()
     lda_class.print_top_words()
     # 在新闻文档中添加话题标签
     lda_class.save_topic()
