@@ -17,26 +17,55 @@ class FileProcess:
                 writefile.write(row)
 
     @staticmethod
-    def csv_to_single_txt(readfile, writefile):
+    def csv_to_txt_regular(readfile, writefile):
         """
             读取csv保存为单独的txt文件
             将csv中的每一行保存为txt/*/nlp_content_text_i.txt文件
         """
+        if not os.path.exists(writefile):
+            os.makedirs(writefile)
         with open(readfile, 'r', encoding='utf-8') as csv_file:
             reader = csv.DictReader(csv_file)
             content_list = [row['title'] + row['content'] for row in reader]
+            # 停用词
+            stop_words = open('corpus/new_stopwords-utf8.txt', 'r', encoding='utf-8').readlines()
             i = 1
             for content in content_list:
+                content = re.sub('[a-zA-Z\s]', '', content)
+                for stop_word in stop_words:
+                    stop_word = stop_word.strip()
+                    content.translate(str.maketrans("", "", stop_word))
                 print(content)
-                # content_decode=content.decode('GBK')
-                document_cut = jieba.cut(content)
-                result = ''.join(document_cut)
-                result.encode('utf-8')
                 with open(writefile + '/news_content' + str(i) + '.txt', 'w', encoding='utf-8') as txt_file:
-                    txt_file.write(result)
+                    txt_file.write(content)
                     txt_file.close()
                 i = i + 1
         csv_file.close()
+
+    @staticmethod
+    def csv_to_single_txt_regular(readfile, writefile):
+        """
+            读取csv保存为单独的txt文件
+            将csv中的每一行保存为txt/*/nlp_content_text_i.txt文件
+        """
+        if not os.path.exists(writefile):
+            os.makedirs(writefile)
+        with open(readfile, 'r', encoding='utf-8') as csv_file:
+            reader = csv.DictReader(csv_file)
+            content_list = [row['title'] + row['content'] for row in reader]
+            # 停用词
+            stop_words = open('corpus/new_stopwords-utf8.txt', 'r', encoding='utf-8').readlines()
+            for content in content_list:
+                content = re.sub('[a-zA-Z\s]', '', content)
+                for stop_word in stop_words:
+                    stop_word = stop_word.strip()
+                    content.translate(str.maketrans("", "", stop_word))
+                print(content)
+                with open(writefile + '/news_content.txt', 'a', encoding='utf-8') as txt_file:
+                    txt_file.write(content+'\n')
+                    txt_file.close()
+        csv_file.close()
+
 
     # 遍历指定目录，显示目录下的所有文件名
     @staticmethod
@@ -68,7 +97,7 @@ class FileProcess:
         path_dir = os.listdir(root)
         print(path_dir)
         # 对文件名按照数字进行排序
-        for all_dir in sorted(path_dir, key=lambda x:int(x[12:-4])):
+        for all_dir in sorted(path_dir, key=lambda x: int(x[12:-4])):
             child = os.path.join('%s%s' % (root, all_dir))
             # 打开目录下包含的文档
             with open(child, encoding='utf-8') as child_file:
@@ -120,8 +149,10 @@ class FileProcess:
 if __name__ == '__main__':
     # 把所有的文本都集合在这个food_news_corpus里
     # FileProcess.gbk_2_utf('all_news_data.csv', 'all_news_data_utf.csv')
-    # FileProcess.csv_to_single_txt('all_news_data_utf.csv', 'data/')
-    corpus_result = FileProcess.make_corpus_from_dir('data/', 'corpus/news_content_corpus.txt')
-    print(len(corpus_result))
-    corpus_file = open('corpus/news_content_corpus.txt', 'r', encoding="utf-8")
-    print(len(corpus_file.readlines()))
+    # FileProcess.csv_to_single_txt('all_news_data_utf.csv', 'data/origin')
+    # FileProcess.csv_to_txt_regular('all_news_data_utf.csv', 'data/regular/')
+    FileProcess.csv_to_single_txt_regular('all_news_data_utf.csv', 'data/regular_total/')
+    # corpus_result = FileProcess.make_corpus_from_dir('data/', 'corpus/news_content_corpus.txt')
+    # print(len(corpus_result))
+    # corpus_file = open('corpus/news_content_corpus.txt', 'r', encoding="utf-8")
+    # print(len(corpus_file.readlines()))
