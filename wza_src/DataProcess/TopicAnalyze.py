@@ -77,7 +77,6 @@ def topic_analyze(corpus):
     plt.show()
 
 
-
 if __name__ == '__main__':
-    food_news_corpus = get_corpus('corpus/food_news_corpus.txt')
+    food_news_corpus = get_corpus('corpus/news_content_corpus.txt')
     topic_analyze(food_news_corpus)
