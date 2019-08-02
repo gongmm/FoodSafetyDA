@@ -73,8 +73,9 @@ def topic_analyze(corpus):
     plt.plot(df.columns.values, df.iloc[0].values, '#007A99')
     plt.xticks(df.columns.values)
     plt.ylabel('train Perplexity')
-    plt.show()
     plt.savefig('lda_topic_perplexity.png', bbox_inches='tight', pad_inches=0.1)
+    plt.show()
+
 
 
 if __name__ == '__main__':
