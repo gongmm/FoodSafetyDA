@@ -11,12 +11,12 @@ import pickle
 import tensorflow as tf
 
 
-import sys
-sys.path.append('../ChineseNER')  # 添加自己指定的搜索路径
-from model import Model
-import loader
-import utils
-import data_utils
+# import sys
+# sys.path.append('../ChineseNER')  # 添加自己指定的搜索路径
+# from model import Model
+# import loader
+# import utils
+# import data_utils
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 
@@ -48,7 +48,7 @@ def get_topic_doc():
     news_topic_df = pd.read_csv(news_data_topic_csv)
     doc_num = news_topic_df.shape[0]
 
-    for i in range(1, doc_num+1):
+    for i in range(1, doc_num):
         print('处理第%d个文档' % i)
         # 判断文档对应的主题文件夹是否存在
         content, title, topic_id = news_topic_df.loc[i, ['content', 'title', 'topic_id']]
@@ -276,7 +276,7 @@ def sort_key(s):
 
 
 def doc2vec(topic_num):
-    """将所有文档转换为向量，并存入对应主题的csv中
+    """将所有文档转换为向量，并将向量矩阵和文档索引存入对应主题的文件中
 
     Args:
         topic_num: 主题数量
@@ -362,25 +362,27 @@ def evaluate_entities(line, config_file='ChineseNER/config_file', log_file='Chin
     with open(map_file, "rb") as f:
         char_to_id, id_to_char, tag_to_id, id_to_tag = pickle.load(f)
     with tf.Session(config=tf_config) as sess:
-        model = utils.create_model(sess, Model, ckpt_path, data_utils.load_word2vec, config, id_to_char, logger)
-        while True:
-            result = model.evaluate_line(sess, input_from_line(line, char_to_id), id_to_tag)
-            print(result)
+        model = utils.create_model(sess, model.Model, ckpt_path, data_utils.load_word2vec, config, id_to_char, logger)
+        result = model.evaluate_line(sess, data_utils.input_from_line(line, char_to_id), id_to_tag)
+        print(result)
+        return result
+
 
 
 def events_detect():
     print("———————————开始提取事件—————————————")
 
     print("———开始整理主题文档———")
-    topic_num = get_topic_doc()
+    # topic_num = get_topic_doc()
+    topic_num = 36
     print("———结束整理主题文档———")
 
     print("—————开始训练模型—————")
-    train_model(topic_num)
+    #train_model(topic_num)
     print("—————结束训练模型—————")
 
     print("————开始文档向量化————")
-    # doc2vec(topic_num)
+    doc2vec(topic_num)
     print("————结束文档向量化————")
 
     print("—————开始层次聚类—————")
