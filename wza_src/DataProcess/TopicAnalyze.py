@@ -16,7 +16,7 @@ def get_corpus(filepath):
     with open(filepath, 'r', encoding='UTF-8') as f:
         for line in f.readlines():
             corpus.append(line.strip())
-    print(corpus)
+    # print(corpus)
     return corpus
 
 
