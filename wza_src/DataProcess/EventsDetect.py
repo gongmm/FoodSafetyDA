@@ -13,13 +13,14 @@ import tensorflow as tf
 
 import sys
 sys.path.append('..')  # 添加自己指定的搜索路径
-import ChineseNER.model
+sys.path.append('../ChineseNER')
+from ChineseNER.model import Model
 import ChineseNER.loader
 import ChineseNER.utils
 import ChineseNER.data_utils
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 result_dir = 'result'
 model_dir = 'model'
@@ -87,7 +88,7 @@ def get_doc_entity(topic_num):
         topic_num: 主题的数量
     """
 
-    with open('data/regular_total/news_content', 'r', encoding='utf-8') as f:
+    with open('data/regular_total/news_content.txt', 'r', encoding='utf-8') as f:
         doc_contents = f.readlines()  # 一行文本
     for i in range(topic_num):
         print('————处理第%d个主题————' % i)
@@ -169,29 +170,35 @@ def get_doc_similarity(d1, d2):
     Args:
         d1: 文档d1向量
         d2: 文档d2向量
+
+    Returns:
+        sim_doc: 余弦相似度
     """
     return similarity(d1, d2)
 
 
-# TODO: 获取命名实体
-def get_entity_similarity(d1, d2):
-    """计算文档中提取的命名实体相似度
+def get_entity_similarity(entity_1, entity_2):
+    """计算命名实体序列向量间的相似度
 
-    获得文档中提取出食品专有名词及时间、地点、人物等专有名词的相似度。
+    Args:
+        entity_1: 命名实体序列向量1
+        entity_2: 命名实体序列向量2
+
+    Returns:
+        sim_entity: 余弦相似度
     """
-    entity_1 = d1
-    entity_2 = d2
-
     return similarity(entity_1, entity_2)
 
 
-# TODO: 相似度计算方法
 def similarity(a_vect, b_vect):
-    """ 计算两个向量的相似度
+    """ 计算两个向量的余弦相似度
 
     Args:
         a_vect: a 向量
         b_vect: b 向量
+
+    Returns:
+        cos: 余弦相似度
     """
     # dot_val = 0.0
     # a_norm = 0.0
@@ -243,7 +250,6 @@ class LabeledLineSentence(object):
             yield gensim.models.doc2vec.LabeledSentence(words=doc.split(), tags=[self.labels_list[idx]])
 
 
-# TODO: 定义距离函数
 def get_distance(d1, d2):
     """获得加权的总相似度
 
@@ -251,14 +257,22 @@ def get_distance(d1, d2):
     d1，d2为两个不同的文档；
     w为文档相似度的权重，需要实验得出；
     Sim_doc(d1, d2)计算文档相似度
-    Sim_entity(d1, d2)计算文档中提取的命名实体相似度
+    Sim_entity(d1, d2)计算文档中提取的命名实体序列的相似度
+
+    Args:
+        d1: 文档1的向量
+        d2: 文档2的向量
+        (注意: 0-255维是文档向量，256-306维是命名实体序列向量)
+
+    Returns:
+        sim: 加权相似度，作为层次聚类的距离值
     """
-    sim_doc = get_doc_similarity(d1, d2)
-    sim_entity = get_entity_similarity(d1, d2)
+    sim_doc = get_doc_similarity(d1[:256], d2[:256])
+    sim_entity = get_entity_similarity(d1[256:], d2[256:])
 
     w = 0.7  # weight
     sim = w * sim_doc + (1 - w) * sim_entity
-    return sim_doc
+    return sim
 
 
 def sort_key(s):
@@ -322,37 +336,36 @@ def entity2vec(topic_num):
     for i in range(topic_num):
         print('————处理第%d个主题————' % i)
         print("load model")
-        model_path = os.path.join(model_dir, "doc2vec" + str(i) + ".model")
-        model = gensim.models.Doc2Vec.load(model_path)
 
-        data_dir = "topic_doc/topic" + str(i)
-        doc_labels = [f for f in os.listdir(data_dir) if f.endswith('.txt')]
-        doc_labels.sort(key=sort_key)
-        print(len(doc_labels))
+        # 加载word2vec模型
+        word2vec_model_file_50 = 'model/word2vec_50.model'
+        model = gensim.models.word2vec.Word2Vec.load(word2vec_model_file_50)
 
-        is_exists = os.path.exists(vec_dir)
-        if not is_exists:
-            os.makedirs(vec_dir)
+        data_dir = os.path.join("topic_doc", "topic" + str(i), "entity")
+        entity_labels = [f for f in os.listdir(data_dir) if f.endswith('.txt')]
+        entity_labels.sort(key=sort_key)
+        print(len(entity_labels))
+
         vec_file = os.path.join(vec_dir, 'topic' + str(i) + '.vec')
-        doc_id_file = os.path.join(vec_dir, 'topic' + str(i) + '_doc.index')
+        old_vec_arr = joblib.load(vec_file)
         vec_arr = []
-        doc_id_list = []
 
-        for j in range(len(doc_labels)):
-            doc_file = os.path.join(data_dir, doc_labels[j])
+        for j in range(len(entity_labels)):
+            doc_file = os.path.join(data_dir, entity_labels[j])
             line = open(doc_file, 'r', encoding='UTF-8').read()  # 一行文件
             words = line.split()
 
             # 转成句子向量
             vec = sent2vec(model, words)
-            vec_arr.append(vec)
+            # 若没有命名实体，命名实体向量填充为0
+            if not isinstance(vec, np.ndarray):
+                vec = np.zeros(50)
+            # 拼接向量
+            new_arr = np.concatenate((old_vec_arr[j], vec), axis=0)
+            vec_arr.append(new_arr)
 
-            # 得到doc_id
-            doc_id = doc_labels[j].split('doc')[1].split('.')[0]
-            doc_id_list.append(doc_id)
-
+        # 写回矩阵文件
         joblib.dump(vec_arr, vec_file)
-        joblib.dump(doc_id_list, doc_id_file)
 
 
 def hierarchy_cluster(topic_num):
@@ -364,7 +377,7 @@ def hierarchy_cluster(topic_num):
     for i in range(topic_num):
         print('————处理第%d个主题————' % i)
 
-        # 加载文档向量化文件
+        # 加载文档向量文件
         is_exists = os.path.exists(vec_dir)
         if not is_exists:
             os.makedirs(vec_dir)
@@ -391,14 +404,17 @@ def hierarchy_cluster(topic_num):
 
 
 def evaluate_entities(line):
-    """
+    """获得包含食品专有名词和其他命名实体的文本序列
 
     Args:
         line: 预处理后的文档文本
 
     Returns:
-
+        result: 带有命名实体的文本序列
     """
+    # 重置默认图形，解决跑两次模型变量已经存在的问题
+    tf.reset_default_graph()
+
     # food entities
     config_file = '../ChineseNER/food/config_file'
     log_file = '../ChineseNER/food/train.log'
@@ -406,17 +422,21 @@ def evaluate_entities(line):
     ckpt_path = '../ChineseNER/food/ckpt'
     food_result = evaluate_entities_core(line, config_file, log_file, map_file, ckpt_path)
 
+    food_entities = list(set([f['word'] for f in food_result['entities']]))
 
+    # 重置默认图形，解决跑两次模型变量已经存在的问题
+    tf.reset_default_graph()
 
-    result = None
+    # other entities
+    config_file = '../ChineseNER/other/config_file'
+    log_file = '../ChineseNER/other/train.log'
+    map_file = '../ChineseNER/other/maps.pkl'
+    ckpt_path = '../ChineseNER/other/ckpt'
+    other_result = evaluate_entities_core(line, config_file, log_file, map_file, ckpt_path)
 
-    # # other entities
-    # config_file = '../ChineseNER/other/config_file'
-    # log_file = '../ChineseNER/other/train.log'
-    # map_file = '../ChineseNER/other/maps.pkl'
-    # ckpt_path = '../ChineseNER/other/ckpt'
-    # other_result = evaluate_entities_core(line, config_file, log_file, map_file, ckpt_path)
+    other_entities = list(set([f['word'] for f in other_result['entities']]))
 
+    result = ' '.join(food_entities + other_entities)
     return result
 
 
@@ -431,13 +451,19 @@ def evaluate_entities_core(line, config_file='../ChineseNER/config_file', log_fi
         map_file: 映射文件路径
         ckpt_path: 模型文件路径
 
-    Returns: 命名实体list，list中每个元素是字典。字典格式为：
-             {
-             'word':'三无产品',
-             'start':10,
-             'end':14,
-             'type':'Food'
-             }
+    Returns: 字典，字典里的entities命名实体是list，list中每个元素是字典。字典格式为：
+             result:
+                 {
+                 'string':'xxxxxxx',
+                 'entities':[{x},{y}]
+                 }
+             x:
+                 {
+                 'word':'三无产品',
+                 'start':10,
+                 'end':14,
+                 'type':'Food'
+                 }
     """
     config = ChineseNER.utils.load_config(config_file)
     logger = ChineseNER.utils.get_logger(log_file)
@@ -447,11 +473,58 @@ def evaluate_entities_core(line, config_file='../ChineseNER/config_file', log_fi
     with open(map_file, "rb") as f:
         char_to_id, id_to_char, tag_to_id, id_to_tag = pickle.load(f)
     with tf.Session(config=tf_config) as sess:
-        model = ChineseNER.utils.create_model(sess, ChineseNER.model.Model, ckpt_path,
+        model = ChineseNER.utils.create_model(sess, Model, ckpt_path,
                                               ChineseNER.data_utils.load_word2vec, config, id_to_char, logger)
         result = model.evaluate_line(sess, ChineseNER.data_utils.input_from_line(line, char_to_id), id_to_tag)
         print(result)
         return result
+
+
+def test_doc_sim(doc1, doc2):
+    i = 0
+    model_path = os.path.join(model_dir, "doc2vec" + str(i) + ".model")
+    model = gensim.models.Doc2Vec.load(model_path)
+    doc1 = doc1.split()
+    doc2 = doc2.split()
+    vec1_1 = model.infer_vector(doc1)
+    vec2_1 = model.infer_vector(doc2)
+    vec1_2 = sent2vec(model, doc1)
+    vec2_2 = sent2vec(model, doc2)
+    sim1 = test_get_sim(vec1_1, vec2_1)
+    print(sim1)
+    sim2 = test_get_sim(vec1_2, vec2_2)
+    print(sim2)
+
+
+def test_get_sim(a_vect, b_vect):
+    dot_val = 0.0
+    a_norm = 0.0
+    b_norm = 0.0
+    cos = None
+    for a, b in zip(a_vect, b_vect):
+        dot_val += a * b
+        a_norm += a ** 2
+        b_norm += b ** 2
+    if a_norm == 0.0 or b_norm == 0.0:
+        cos = -1
+    else:
+        cos = dot_val / ((a_norm * b_norm) ** 0.5)
+    return cos
+
+
+def get_cluster_result(topic_num):
+    """获得层次聚类后的结果
+
+    Args:
+        topic_num: 主题的数量
+    """
+    for i in range(topic_num):
+        print('————处理第%d个主题————' % i)
+        cluster_file = os.path.join(cluster_matrix_dir, 'topic' + str(i) + '.matrix')
+        doc_id_file = os.path.join(vec_dir, 'topic' + str(i) + '_doc.index')
+        matrix = joblib.load(cluster_file)
+        doc_index = joblib.load(doc_id_file)
+
 
 
 def events_detect():
@@ -459,8 +532,12 @@ def events_detect():
 
     print("———开始整理主题文档———")
     # topic_num = get_topic_doc()
-    topic_num = 36
+    topic_num = 1
     print("———结束整理主题文档———")
+
+    print("———开始获得命名实体———")
+    # get_doc_entity(topic_num)
+    print("———结束获得命名实体———")
 
     print("—————开始训练模型—————")
     # train_model(topic_num)
@@ -470,6 +547,10 @@ def events_detect():
     # doc2vec(topic_num)
     print("————结束文档向量化————")
 
+    print("————开始实体向量化————")
+    # entity2vec(topic_num)
+    print("————结束实体向量化————")
+
     print("—————开始层次聚类—————")
     hierarchy_cluster(topic_num)
     print("—————结束层次聚类—————")
@@ -478,4 +559,6 @@ def events_detect():
 
 
 if __name__ == '__main__':
-    events_detect()
+    # events_detect()
+    topic_num = 1
+    get_cluster_result(topic_num)
