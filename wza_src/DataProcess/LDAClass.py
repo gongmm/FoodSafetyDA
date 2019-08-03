@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 class LDAClass:
 
-    def __init__(self, n_topic=36, corpus_file='corpus/news_content_corpus.txt',
+    def __init__(self, n_topic=45, corpus_file='corpus/news_content_corpus.txt',
                  lda_model_file='model/lda.model',
                  feature_names_model_file='model/feature.model'):
         self.corpus = []
@@ -203,7 +203,9 @@ if __name__ == '__main__':
     # lda_class.save_topic_word()
     lda_class.print_top_words()
     # 在新闻文档中添加话题标签
-    lda_class.save_topic()
+    # lda_class.save_topic()
+    # 获得文档——主题分布
     lda_class.draw_doc_topic()
+    # 获得主题——词分布
     # lda_class.draw_topic_word()
-    # lda_class.write_doc_topic_to_origin('all_news_data_utf.csv', 'result/all_news_data_utf_topic.csv')
+    lda_class.write_doc_topic_to_origin('all_news_data_utf.csv', 'result/all_news_data_utf_topic.csv')

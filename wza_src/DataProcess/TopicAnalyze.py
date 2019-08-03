@@ -46,7 +46,7 @@ def topic_analyze(corpus):
     grid = dict()
     t0 = time()
     # 300个主题，以5为间隔
-    for i in range(30, 60, 5):
+    for i in range(40, 55, 1):
         print("===== calculate topic num %d =====" % i)
         grid[i] = list()
         n_topics = i
