@@ -146,9 +146,10 @@ class LDAClass:
         ax[4].set_xlabel("Topic")
 
         plt.tight_layout()
-        plt.show()
         # 保存图片
         plt.savefig('result/doc_topic_lda.png', bbox_inches='tight', pad_inches=0.1)
+
+        plt.show()
 
     def save_topic_word(self, n_top_words=20, writefile='result/food_topic_word.csv'):
         """将话题关键词存入单独的csv文件 ['topic_id', 'topic_word']
