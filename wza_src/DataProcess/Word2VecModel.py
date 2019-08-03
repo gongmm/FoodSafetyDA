@@ -6,7 +6,8 @@ import logging
 from sklearn.externals import joblib
 
 corpus = []
-word2vec_model_file = 'model/word2vec.model'
+word2vec_model_file_100 = 'model/word2vec_100.model'
+word2vec_model_file_50 = 'model/word2vec_50.model'
 corpus_file='corpus/news_content_corpus.txt'
 
 
@@ -23,19 +24,20 @@ def train():
     corpus = get_corpus()
     # 训练模型，部分参数如下
     sentences = word2vec.Text8Corpus(corpus_file)
-    model = word2vec.Word2Vec(sentences, size=100, hs=1, min_count=1, window=3)
-    model.save(word2vec_model_file)
+    model = word2vec.Word2Vec(sentences, size=50, hs=1, min_count=1, window=3)
+    model.save(word2vec_model_file_50)
 
 
 def evaluate():
     print('-----------------模型预测----------------------------')
     # 加载模型
-    model = word2vec.Word2Vec.load(word2vec_model_file)
-
+    model = word2vec.Word2Vec.load(word2vec_model_file_50)
+    array = model.wv[u'三小']
     # 计算两个词向量的相似度
     try:
         sim1 = model.similarity(u'黑作坊', u'小作坊')
         sim2 = model.similarity(u'猪瘟', u'瘦肉精')
+
     except KeyError:
         sim1 = 0
         sim2 = 0

@@ -13,7 +13,8 @@ import tensorflow as tf
 
 import sys
 sys.path.append('..')  # 添加自己指定的搜索路径
-import ChineseNER.model
+sys.path.append('../ChineseNER')
+from ChineseNER.model import Model
 import ChineseNER.loader
 import ChineseNER.utils
 import ChineseNER.data_utils
@@ -87,7 +88,7 @@ def get_doc_entity(topic_num):
         topic_num: 主题的数量
     """
 
-    with open('data/regular_total/news_content', 'r', encoding='utf-8') as f:
+    with open('data/regular_total/news_content.txt', 'r', encoding='utf-8') as f:
         doc_contents = f.readlines()  # 一行文本
     for i in range(topic_num):
         print('————处理第%d个主题————' % i)
@@ -322,37 +323,33 @@ def entity2vec(topic_num):
     for i in range(topic_num):
         print('————处理第%d个主题————' % i)
         print("load model")
-        model_path = os.path.join(model_dir, "doc2vec" + str(i) + ".model")
-        model = gensim.models.Doc2Vec.load(model_path)
 
-        data_dir = "topic_doc/topic" + str(i)
-        doc_labels = [f for f in os.listdir(data_dir) if f.endswith('.txt')]
-        doc_labels.sort(key=sort_key)
-        print(len(doc_labels))
+        # 加载word2vec模型
+        word2vec_model_file_50 = 'model/word2vec_50.model'
+        model = gensim.models.word2vec.Word2Vec.load(word2vec_model_file_50)
 
-        is_exists = os.path.exists(vec_dir)
-        if not is_exists:
-            os.makedirs(vec_dir)
+        data_dir = os.path.join("topic_doc", "topic" + str(i), "entity")
+        entity_labels = [f for f in os.listdir(data_dir) if f.endswith('.txt')]
+        entity_labels.sort(key=sort_key)
+        print(len(entity_labels))
+
         vec_file = os.path.join(vec_dir, 'topic' + str(i) + '.vec')
-        doc_id_file = os.path.join(vec_dir, 'topic' + str(i) + '_doc.index')
+        old_vec_arr = joblib.load(vec_file)
         vec_arr = []
-        doc_id_list = []
 
-        for j in range(len(doc_labels)):
-            doc_file = os.path.join(data_dir, doc_labels[j])
+        for j in range(len(entity_labels)):
+            doc_file = os.path.join(data_dir, entity_labels[j])
             line = open(doc_file, 'r', encoding='UTF-8').read()  # 一行文件
             words = line.split()
 
             # 转成句子向量
             vec = sent2vec(model, words)
-            vec_arr.append(vec)
+            # 拼接向量
+            new_arr = np.concatenate((old_vec_arr[j], vec), axis=0)
+            vec_arr.append(new_arr)
 
-            # 得到doc_id
-            doc_id = doc_labels[j].split('doc')[1].split('.')[0]
-            doc_id_list.append(doc_id)
-
+        # 写回矩阵文件
         joblib.dump(vec_arr, vec_file)
-        joblib.dump(doc_id_list, doc_id_file)
 
 
 def hierarchy_cluster(topic_num):
@@ -391,14 +388,17 @@ def hierarchy_cluster(topic_num):
 
 
 def evaluate_entities(line):
-    """
+    """获得包含食品专有名词和其他命名实体的文本序列
 
     Args:
         line: 预处理后的文档文本
 
     Returns:
-
+        result: 带有命名实体的文本序列
     """
+    # 重置默认图形，解决跑两次模型变量已经存在的问题
+    tf.reset_default_graph()
+
     # food entities
     config_file = '../ChineseNER/food/config_file'
     log_file = '../ChineseNER/food/train.log'
@@ -406,17 +406,21 @@ def evaluate_entities(line):
     ckpt_path = '../ChineseNER/food/ckpt'
     food_result = evaluate_entities_core(line, config_file, log_file, map_file, ckpt_path)
 
+    food_entities = list(set([f['word'] for f in food_result['entities']]))
 
+    # 重置默认图形，解决跑两次模型变量已经存在的问题
+    tf.reset_default_graph()
 
-    result = None
+    # other entities
+    config_file = '../ChineseNER/other/config_file'
+    log_file = '../ChineseNER/other/train.log'
+    map_file = '../ChineseNER/other/maps.pkl'
+    ckpt_path = '../ChineseNER/other/ckpt'
+    other_result = evaluate_entities_core(line, config_file, log_file, map_file, ckpt_path)
 
-    # # other entities
-    # config_file = '../ChineseNER/other/config_file'
-    # log_file = '../ChineseNER/other/train.log'
-    # map_file = '../ChineseNER/other/maps.pkl'
-    # ckpt_path = '../ChineseNER/other/ckpt'
-    # other_result = evaluate_entities_core(line, config_file, log_file, map_file, ckpt_path)
+    other_entities = list(set([f['word'] for f in other_result['entities']]))
 
+    result = ' '.join(food_entities + other_entities)
     return result
 
 
@@ -431,13 +435,19 @@ def evaluate_entities_core(line, config_file='../ChineseNER/config_file', log_fi
         map_file: 映射文件路径
         ckpt_path: 模型文件路径
 
-    Returns: 命名实体list，list中每个元素是字典。字典格式为：
-             {
-             'word':'三无产品',
-             'start':10,
-             'end':14,
-             'type':'Food'
-             }
+    Returns: 字典，字典里的entities命名实体是list，list中每个元素是字典。字典格式为：
+             result:
+                 {
+                 'string':'xxxxxxx',
+                 'entities':[{x},{y}]
+                 }
+             x:
+                 {
+                 'word':'三无产品',
+                 'start':10,
+                 'end':14,
+                 'type':'Food'
+                 }
     """
     config = ChineseNER.utils.load_config(config_file)
     logger = ChineseNER.utils.get_logger(log_file)
@@ -447,11 +457,43 @@ def evaluate_entities_core(line, config_file='../ChineseNER/config_file', log_fi
     with open(map_file, "rb") as f:
         char_to_id, id_to_char, tag_to_id, id_to_tag = pickle.load(f)
     with tf.Session(config=tf_config) as sess:
-        model = ChineseNER.utils.create_model(sess, ChineseNER.model.Model, ckpt_path,
+        model = ChineseNER.utils.create_model(sess, Model, ckpt_path,
                                               ChineseNER.data_utils.load_word2vec, config, id_to_char, logger)
         result = model.evaluate_line(sess, ChineseNER.data_utils.input_from_line(line, char_to_id), id_to_tag)
         print(result)
         return result
+
+
+def test_doc_sim(doc1, doc2):
+    i = 0
+    model_path = os.path.join(model_dir, "doc2vec" + str(i) + ".model")
+    model = gensim.models.Doc2Vec.load(model_path)
+    doc1 = doc1.split()
+    doc2 = doc2.split()
+    vec1_1 = model.infer_vector(doc1)
+    vec2_1 = model.infer_vector(doc2)
+    vec1_2 = sent2vec(model, doc1)
+    vec2_2 = sent2vec(model, doc2)
+    sim1 = test_get_sim(vec1_1, vec2_1)
+    print(sim1)
+    sim2 = test_get_sim(vec1_2, vec2_2)
+    print(sim2)
+
+
+def test_get_sim(a_vect, b_vect):
+    dot_val = 0.0
+    a_norm = 0.0
+    b_norm = 0.0
+    cos = None
+    for a, b in zip(a_vect, b_vect):
+        dot_val += a * b
+        a_norm += a ** 2
+        b_norm += b ** 2
+    if a_norm == 0.0 or b_norm == 0.0:
+        cos = -1
+    else:
+        cos = dot_val / ((a_norm * b_norm) ** 0.5)
+    return cos
 
 
 def events_detect():
@@ -462,6 +504,10 @@ def events_detect():
     topic_num = 36
     print("———结束整理主题文档———")
 
+    print("———开始获得命名实体———")
+    get_doc_entity(topic_num)
+    print("———结束获得命名实体———")
+
     print("—————开始训练模型—————")
     # train_model(topic_num)
     print("—————结束训练模型—————")
@@ -470,8 +516,12 @@ def events_detect():
     # doc2vec(topic_num)
     print("————结束文档向量化————")
 
+    print("————开始实体向量化————")
+    entity2vec(topic_num)
+    print("————结束实体向量化————")
+
     print("—————开始层次聚类—————")
-    hierarchy_cluster(topic_num)
+    # hierarchy_cluster(topic_num)
     print("—————结束层次聚类—————")
 
     print("—————————————结束提取事件———————————")
