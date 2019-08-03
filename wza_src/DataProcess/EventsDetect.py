@@ -9,6 +9,7 @@ import re
 import warnings
 import pickle
 import tensorflow as tf
+import csv
 
 
 import sys
@@ -386,7 +387,8 @@ def hierarchy_cluster(topic_num):
         vec_arr = joblib.load(vec_file)
 
         matrix = hierarchy.linkage(vec_arr, method='weighted', metric=get_distance)
-
+        # 根据距离阈值确定文档的聚类结果
+        hierarchy.fcluster(matrix, t=1, criterion='distance')
         # 存储聚类结果图片
         is_exists = os.path.exists(cluster_plot_dir)
         if not is_exists:
@@ -518,13 +520,29 @@ def get_cluster_result(topic_num):
     Args:
         topic_num: 主题的数量
     """
+    print('————开始存储结果————')
+    cluster_result_dir = os.path.join('cluster', 'result')
+    is_exists = os.path.exists(cluster_result_dir)
+    if not is_exists:
+        os.makedirs(cluster_result_dir)
     for i in range(topic_num):
         print('————处理第%d个主题————' % i)
+        # 存结果矩阵
         cluster_file = os.path.join(cluster_matrix_dir, 'topic' + str(i) + '.matrix')
-        doc_id_file = os.path.join(vec_dir, 'topic' + str(i) + '_doc.index')
         matrix = joblib.load(cluster_file)
-        doc_index = joblib.load(doc_id_file)
+        pd_matrix = pd.DataFrame(matrix, columns=['doc_index1', 'doc_index2',
+                                                  'distance', 'merge_step'])
+        result_matrix_file = os.path.join(cluster_result_dir, 'topic' + str(i) + '_matrix.csv')
+        pd_matrix.to_csv(result_matrix_file, index=False)
 
+        # 存文档索引
+        doc_id_file = os.path.join(vec_dir, 'topic' + str(i) + '_doc.index')
+        doc_index = joblib.load(doc_id_file)
+        pd_index = pd.DataFrame(doc_index)
+        result_index_file = os.path.join(cluster_result_dir, 'topic' + str(i) + '_index.csv')
+        pd_index.to_csv(result_index_file, index=True)
+
+    print('————结束存储结果————')
 
 
 def events_detect():
@@ -559,6 +577,6 @@ def events_detect():
 
 
 if __name__ == '__main__':
-    # events_detect()
+    events_detect()
     topic_num = 1
     get_cluster_result(topic_num)
