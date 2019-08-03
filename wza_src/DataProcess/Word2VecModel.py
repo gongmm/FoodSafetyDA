@@ -37,12 +37,22 @@ def evaluate():
     try:
         sim1 = model.similarity(u'黑作坊', u'小作坊')
         sim2 = model.similarity(u'猪瘟', u'瘦肉精')
+        most_similar_1 = model.most_similar('三无')
+        most_similar_2 = model.most_similar('北京')
 
     except KeyError:
         sim1 = 0
         sim2 = 0
+        most_similar_1 = 0
+        most_similar_2 = 0
     print(u'黑作坊 和 小作坊 的相似度为 ', sim1)
     print(u'猪瘟 和 瘦肉精 的相似度为 ', sim2)
+    print('=====与“三无”最相似的词=====')
+    for item in most_similar_1:
+        print(u'三无 ', item)
+    print('=====与“北京”最相似的词=====')
+    for item in most_similar_2:
+        print(u'北京 ', item)
 
 
 if __name__ == '__main__':
