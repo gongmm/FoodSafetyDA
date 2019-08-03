@@ -16,7 +16,7 @@ def get_corpus(filepath):
     with open(filepath, 'r', encoding='UTF-8') as f:
         for line in f.readlines():
             corpus.append(line.strip())
-    # print(corpus)
+    print(len(corpus))
     return corpus
 
 
@@ -46,7 +46,7 @@ def topic_analyze(corpus):
     grid = dict()
     t0 = time()
     # 300个主题，以5为间隔
-    for i in range(1, 100, 5):
+    for i in range(30, 60, 5):
         print("===== calculate topic num %d =====" % i)
         grid[i] = list()
         n_topics = i
@@ -72,7 +72,9 @@ def topic_analyze(corpus):
     # plt.subplot(221)
     plt.plot(df.columns.values, df.iloc[0].values, '#007A99')
     plt.xticks(df.columns.values)
+    plt.xlabel('topic number')
     plt.ylabel('train Perplexity')
+    plt.title('主题数和困惑度的关系')
     plt.savefig('lda_topic_perplexity.png', bbox_inches='tight', pad_inches=0.1)
     plt.show()
 
