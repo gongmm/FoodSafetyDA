@@ -20,7 +20,7 @@ import ChineseNER.utils
 import ChineseNER.data_utils
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 result_dir = 'result'
 model_dir = 'model'
@@ -170,29 +170,35 @@ def get_doc_similarity(d1, d2):
     Args:
         d1: 文档d1向量
         d2: 文档d2向量
+
+    Returns:
+        sim_doc: 余弦相似度
     """
     return similarity(d1, d2)
 
 
-# TODO: 获取命名实体
-def get_entity_similarity(d1, d2):
-    """计算文档中提取的命名实体相似度
+def get_entity_similarity(entity_1, entity_2):
+    """计算命名实体序列向量间的相似度
 
-    获得文档中提取出食品专有名词及时间、地点、人物等专有名词的相似度。
+    Args:
+        entity_1: 命名实体序列向量1
+        entity_2: 命名实体序列向量2
+
+    Returns:
+        sim_entity: 余弦相似度
     """
-    entity_1 = d1
-    entity_2 = d2
-
     return similarity(entity_1, entity_2)
 
 
-# TODO: 相似度计算方法
 def similarity(a_vect, b_vect):
-    """ 计算两个向量的相似度
+    """ 计算两个向量的余弦相似度
 
     Args:
         a_vect: a 向量
         b_vect: b 向量
+
+    Returns:
+        cos: 余弦相似度
     """
     # dot_val = 0.0
     # a_norm = 0.0
@@ -244,7 +250,6 @@ class LabeledLineSentence(object):
             yield gensim.models.doc2vec.LabeledSentence(words=doc.split(), tags=[self.labels_list[idx]])
 
 
-# TODO: 定义距离函数
 def get_distance(d1, d2):
     """获得加权的总相似度
 
@@ -252,14 +257,22 @@ def get_distance(d1, d2):
     d1，d2为两个不同的文档；
     w为文档相似度的权重，需要实验得出；
     Sim_doc(d1, d2)计算文档相似度
-    Sim_entity(d1, d2)计算文档中提取的命名实体相似度
+    Sim_entity(d1, d2)计算文档中提取的命名实体序列的相似度
+
+    Args:
+        d1: 文档1的向量
+        d2: 文档2的向量
+        (注意: 0-255维是文档向量，256-306维是命名实体序列向量)
+
+    Returns:
+        sim: 加权相似度，作为层次聚类的距离值
     """
-    sim_doc = get_doc_similarity(d1, d2)
-    sim_entity = get_entity_similarity(d1, d2)
+    sim_doc = get_doc_similarity(d1[:256], d2[:256])
+    sim_entity = get_entity_similarity(d1[256:], d2[256:])
 
     w = 0.7  # weight
     sim = w * sim_doc + (1 - w) * sim_entity
-    return sim_doc
+    return sim
 
 
 def sort_key(s):
@@ -344,6 +357,9 @@ def entity2vec(topic_num):
 
             # 转成句子向量
             vec = sent2vec(model, words)
+            # 若没有命名实体，命名实体向量填充为0
+            if not isinstance(vec, np.ndarray):
+                vec = np.zeros(50)
             # 拼接向量
             new_arr = np.concatenate((old_vec_arr[j], vec), axis=0)
             vec_arr.append(new_arr)
@@ -361,7 +377,7 @@ def hierarchy_cluster(topic_num):
     for i in range(topic_num):
         print('————处理第%d个主题————' % i)
 
-        # 加载文档向量化文件
+        # 加载文档向量文件
         is_exists = os.path.exists(vec_dir)
         if not is_exists:
             os.makedirs(vec_dir)
@@ -496,16 +512,31 @@ def test_get_sim(a_vect, b_vect):
     return cos
 
 
+def get_cluster_result(topic_num):
+    """获得层次聚类后的结果
+
+    Args:
+        topic_num: 主题的数量
+    """
+    for i in range(topic_num):
+        print('————处理第%d个主题————' % i)
+        cluster_file = os.path.join(cluster_matrix_dir, 'topic' + str(i) + '.matrix')
+        doc_id_file = os.path.join(vec_dir, 'topic' + str(i) + '_doc.index')
+        matrix = joblib.load(cluster_file)
+        doc_index = joblib.load(doc_id_file)
+
+
+
 def events_detect():
     print("———————————开始提取事件—————————————")
 
     print("———开始整理主题文档———")
     # topic_num = get_topic_doc()
-    topic_num = 36
+    topic_num = 1
     print("———结束整理主题文档———")
 
     print("———开始获得命名实体———")
-    get_doc_entity(topic_num)
+    # get_doc_entity(topic_num)
     print("———结束获得命名实体———")
 
     print("—————开始训练模型—————")
@@ -517,15 +548,17 @@ def events_detect():
     print("————结束文档向量化————")
 
     print("————开始实体向量化————")
-    entity2vec(topic_num)
+    # entity2vec(topic_num)
     print("————结束实体向量化————")
 
     print("—————开始层次聚类—————")
-    # hierarchy_cluster(topic_num)
+    hierarchy_cluster(topic_num)
     print("—————结束层次聚类—————")
 
     print("—————————————结束提取事件———————————")
 
 
 if __name__ == '__main__':
-    events_detect()
+    # events_detect()
+    topic_num = 1
+    get_cluster_result(topic_num)
