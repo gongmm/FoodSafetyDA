@@ -102,17 +102,23 @@ def get_doc_entity(topic_num):
             result = re.search(pattern, doc_file)
             if result:
                 doc_id = result.group()[3:]  # 根据文件名获得文档id
-                # 获得预处理后的文本
-                content = doc_contents[int(doc_id)]
-
-                # 送入ChineseNER模型中得到命名实体
-                line = evaluate_entities(content)
 
                 entity_dir = os.path.join('topic_doc', 'topic' + str(i), 'entity')
                 is_exists = os.path.exists(entity_dir)
                 if not is_exists:
                     os.makedirs(entity_dir)
                 file_path = os.path.join(entity_dir, 'topic' + str(i) + '_entity' + str(doc_id) + '.txt')
+                if os.path.exists(file_path):
+                    print('%s文件已存在' % file_path)
+                    continue
+                print('正在处理%s文件' % file_path)
+
+                # 获得预处理后的文本
+                content = doc_contents[int(doc_id)]
+
+                # 送入ChineseNER模型中得到命名实体
+                line = evaluate_entities(content)
+
                 # 写入文件
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.write(line + '\n')  # 把命名实体写进文件
