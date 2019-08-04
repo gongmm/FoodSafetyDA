@@ -9,7 +9,7 @@ import re
 import warnings
 import pickle
 import tensorflow as tf
-import csv
+import jieba
 
 
 import sys
@@ -223,7 +223,7 @@ def sent2vec(model, words):
 
     Args:
         model: Doc2Vec模型
-        words: 分词后的文本
+        words: 分词后的文本list
 
     Returns:
         向量数组
@@ -354,8 +354,22 @@ def entity2vec(topic_num):
         for j in range(len(entity_labels)):
             doc_file = os.path.join(data_dir, entity_labels[j])
             line = open(doc_file, 'r', encoding='UTF-8').read()  # 一行文件
-            words = line.split()
+            words = ''.join(line.split())
 
+            # 分词
+            row_list = [eachWord for eachWord in jieba.cut(words)]
+
+            # 去停用词
+            out_str = ''
+            stop_words = open('corpus/NER_stopwords.txt', 'r', encoding='utf-8').readlines()
+            for i in range(len(stop_words)):
+                stop_words[i] = stop_words[i].strip()
+            for row in row_list:
+                if row not in stop_words:
+                    if row != '\t':
+                        out_str += row
+                        out_str += ' '
+            words = out_str.split()
             # 转成句子向量
             vec = sent2vec(model, words)
             # 若没有命名实体，命名实体向量填充为0
@@ -375,7 +389,7 @@ def hierarchy_cluster(topic_num):
     Args:
         topic_num: 主题数量
     """
-    for i in range(topic_num):
+    for i in range(2, 3):
         print('————处理第%d个主题————' % i)
 
         # 加载文档向量文件
@@ -386,15 +400,15 @@ def hierarchy_cluster(topic_num):
 
         vec_arr = joblib.load(vec_file)
 
-        matrix = hierarchy.linkage(vec_arr, method='weighted', metric=get_distance)
+        Z = hierarchy.linkage(vec_arr, method='weighted', metric=get_distance)
         # 根据距离阈值确定文档的聚类结果
-        hierarchy.fcluster(matrix, t=1, criterion='distance')
+        matrix = hierarchy.fcluster(Z, t=1, criterion='distance')
         # 存储聚类结果图片
         is_exists = os.path.exists(cluster_plot_dir)
         if not is_exists:
             os.makedirs(cluster_plot_dir)
         plot_file = os.path.join(cluster_plot_dir, 'topic' + str(i) + '_dendrogram.png')
-        hierarchy.dendrogram(matrix)  # 画图：聚类结果
+        hierarchy.dendrogram(Z)  # 画图：聚类结果
         plt.savefig(plot_file)  # 存储聚类结果图片
 
         # 写入聚类结果文件
@@ -578,5 +592,5 @@ def events_detect():
 
 if __name__ == '__main__':
     events_detect()
-    topic_num = 1
-    get_cluster_result(topic_num)
+    # topic_num = 1
+    # get_cluster_result(topic_num)
