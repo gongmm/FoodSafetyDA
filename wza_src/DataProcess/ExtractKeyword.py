@@ -16,11 +16,12 @@ def get_all_files(path):
 
 def extract_single_doc(content):
     keywords = []
-    for keyword, weight in extract_tags(content, withWeight=True):
-        keywords.append(keyword)
-        # print('%s %s' % (keyword, weight))
-    # for keyword, weight in textrank(content, withWeight=True):
+    # for keyword, weight in extract_tags(content, withWeight=True):
+    #     keywords.append(keyword)
     #     print('%s %s' % (keyword, weight))
+    for keyword, weight in textrank(content, withWeight=True):
+        #     print('%s %s' % (keyword, weight))
+        keywords.append(keyword)
     return keywords[:10]
 
 
@@ -51,7 +52,7 @@ def save_keywords(path, topic_keywords):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     for index in range(len(topic_keywords)):
-        filename = 'event' + str(index+1) + '.txt'
+        filename = 'event' + str(index) + '.txt'
         file_path = os.path.join(save_path, filename)
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(' '.join(topic_keywords[index]))

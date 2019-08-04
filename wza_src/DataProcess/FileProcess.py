@@ -62,10 +62,9 @@ class FileProcess:
                     content.translate(str.maketrans("", "", stop_word))
                 print(content)
                 with open(writefile + '/news_content.txt', 'a', encoding='utf-8') as txt_file:
-                    txt_file.write(content+'\n')
+                    txt_file.write(content + '\n')
                     txt_file.close()
         csv_file.close()
-
 
     # 遍历指定目录，显示目录下的所有文件名
     @staticmethod
