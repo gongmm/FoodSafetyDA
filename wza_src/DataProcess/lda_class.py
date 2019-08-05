@@ -46,7 +46,7 @@ class LDAClass:
 
     def save_topic(self, writefile='result/doc_topic.csv'):
         """ 将每篇doc对应的topic存储 [doc_id, topic_id]
-            doc_id 从1开始
+            doc_id 从0开始
             topic_id 从0开始
 
         Args:
@@ -70,7 +70,7 @@ class LDAClass:
             writer = csv.writer(csv_file)
             writer.writerow(['doc_id', 'topic_id'])
             for n in range(doc_topic.shape[0]):
-                doc_id = n + 1
+                doc_id = n
                 topic_id = doc_topic[n].argmax()
                 writer.writerow([str(doc_id), str(topic_id)])
 
@@ -203,9 +203,9 @@ if __name__ == '__main__':
     # lda_class.save_topic_word()
     lda_class.print_top_words()
     # 在新闻文档中添加话题标签
-    # lda_class.save_topic()
+    lda_class.save_topic()
     # 获得文档——主题分布
-    lda_class.draw_doc_topic()
+    # lda_class.draw_doc_topic()
     # 获得主题——词分布
     # lda_class.draw_topic_word()
-    lda_class.write_doc_topic_to_origin('all_news_data_utf.csv', 'result/all_news_data_utf_topic.csv')
+    # lda_class.write_doc_topic_to_origin('all_news_data_utf.csv', 'result/all_news_data_utf_topic.csv')
