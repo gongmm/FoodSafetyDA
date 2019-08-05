@@ -8,6 +8,7 @@ topic_words_csv = os.path.join(result_dir, 'food_topic_word.csv')
 
 
 def sort_key(s):
+    """ 获得‘topic1’里的数字"""
     if s:
         try:
             c = re.findall('\\d+', s)[0]

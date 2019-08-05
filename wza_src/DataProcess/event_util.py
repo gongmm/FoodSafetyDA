@@ -34,9 +34,10 @@ doc_topic_csv = os.path.join(result_dir, 'doc_topic.csv')
 
 
 def sort_key(s):
+    """ 获得‘topic1_doc551.txt’里的文档序号551"""
     if s:
         try:
-            c = re.findall('\\d+', s)[1]
+            c = re.findall('\\d+', s)[1]  # 获取识别到的第二个数字
         except:
             c = -1
         return int(c)
@@ -88,7 +89,8 @@ def get_topic_doc():
 def get_doc_entity(topic_num):
     """调用ChineseNER获得所有文档的命名实体
 
-    获得所有文档的命名实体，将去重后的实体当成是分词，后续要送入doc2vec模型中训练。
+    获得所有文档的命名实体及其标签，将去重后的实体当成是分词，存入对应的txt文件中。
+    后续要送入doc2vec模型中训练。
 
     Args:
         topic_num: 主题的数量
@@ -96,7 +98,7 @@ def get_doc_entity(topic_num):
 
     with open('data/regular_total/news_content.txt', 'r', encoding='utf-8') as f:
         doc_contents = f.readlines()  # 一行文本
-    for i in range(4, topic_num):
+    for i in range(topic_num):
         print('————处理第%d个主题————' % i)
         # 读取一个主题中所有文档的文件名
         topic_dir = "topic_doc/topic" + str(i)
@@ -131,12 +133,16 @@ def get_doc_entity(topic_num):
                 print('找不到文档文件！')
 
         # 批量送入ChineseNER模型中得到命名实体
-        lines = evaluate_entities(content_list)
+        if not content_list:
+            return
+
+        lines, tags = evaluate_entities(content_list)
 
         # 批量写入文件
         for j in range(len(file_path_list)):
             with open(file_path_list[j], 'w', encoding='utf-8') as f:
                 f.write(lines[j] + '\n')  # 把命名实体写进文件
+                f.write(tags[j] + '\n')  # 将标签写进文件下一行
 
 
 def evaluate_entities(lines):
@@ -146,7 +152,8 @@ def evaluate_entities(lines):
         lines: 预处理后的文档文本列表
 
     Returns:
-        result: 带有命名实体的文本序列
+        result_list: 带有命名实体的文本序列
+        tag_list: 实体对应的标签序列
     """
     # 重置默认图形，解决跑两次模型变量已经存在的问题
     tf.reset_default_graph()
@@ -156,7 +163,7 @@ def evaluate_entities(lines):
     log_file = '../ChineseNER/food/train.log'
     map_file = '../ChineseNER/food/maps.pkl'
     ckpt_path = '../ChineseNER/food/ckpt'
-    food_result = evaluate_entities_core(lines, config_file, log_file, map_file, ckpt_path)
+    food_result, food_tags = evaluate_entities_core(lines, config_file, log_file, map_file, ckpt_path)
 
     # 重置默认图形，解决跑两次模型变量已经存在的问题
     tf.reset_default_graph()
@@ -166,15 +173,18 @@ def evaluate_entities(lines):
     log_file = '../ChineseNER/other/train.log'
     map_file = '../ChineseNER/other/maps.pkl'
     ckpt_path = '../ChineseNER/other/ckpt'
-    other_result = evaluate_entities_core(lines, config_file, log_file, map_file, ckpt_path)
+    other_result, other_tags = evaluate_entities_core(lines, config_file, log_file, map_file, ckpt_path)
 
     # 将所有命名实体拼接起来
     result_list = []
+    tag_list = []
     for i in range(len(food_result)):
         result = ' '.join(food_result[i] + other_result[i])
+        tags = ' '.join(food_tags[i] + other_tags[i])
         result_list.append(result)
+        tag_list.append(tags)
 
-    return result_list
+    return result_list, tag_list
 
 
 def evaluate_entities_core(lines, config_file='../ChineseNER/config_file', log_file='../ChineseNER/train.log',
@@ -205,6 +215,7 @@ def evaluate_entities_core(lines, config_file='../ChineseNER/config_file', log_f
 
     Returns:
         result_list: 二维列表，其中result_list[i]是对应文档i的去重后的命名实体的列表。
+        tag_list: 二维列表，实体对应的标签序列
     """
     config = ChineseNER.utils.load_config(config_file)
     logger = ChineseNER.utils.get_logger(log_file)
@@ -217,11 +228,24 @@ def evaluate_entities_core(lines, config_file='../ChineseNER/config_file', log_f
         model = ChineseNER.utils.create_model(sess, Model, ckpt_path,
                                               ChineseNER.data_utils.load_word2vec, config, id_to_char, logger)
         result_list = []
+        tag_list = []
         for line in tqdm(lines):
             result = model.evaluate_line(sess, ChineseNER.data_utils.input_from_line(line, char_to_id), id_to_tag)
-            entities = list(set([f['word'] for f in result['entities']]))
-            # print(entities)
+            # 去重
+            pairs = []
+            for f in result['entities']:
+                pairs.append((f['word'], f['type']))
+            uni_pairs = list(set(pairs))
+            # 取出命名实体及对应标签
+            entities = [p[0] for p in uni_pairs]  # 命名实体
+            tags = [p[1] for p in uni_pairs]  # 命名实体对应的标签
+            # entities = list(set([f['word'] for f in result['entities']]))
             result_list.append(entities)
+            tag_list.append(tags)
 
-        return result_list
+        return result_list, tag_list
 
+
+if __name__ == '__main__':
+    topic_num = 45
+    get_doc_entity(topic_num)
