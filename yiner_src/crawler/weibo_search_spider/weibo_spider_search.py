@@ -17,14 +17,10 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import xlwt
 
-# 先调用无界面浏览器PhantomJS或Firefox
-# driver = webdriver.PhantomJS()
-# chrome_driver = '/Users/yiner/anaconda3/lib/python3.6/site-packages/selenium/webdriver/chrome/chromedriver'
-# driver = webdriver.Chrome(executable_path=chrome_driver)
 option = webdriver.ChromeOptions()
 option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
-# option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 2")
 driver = webdriver.Chrome(chrome_options=option)
+# driver = webdriver.Chrome()
 
 
 # ********************************************************************************
@@ -97,7 +93,7 @@ def GetSearchContent(key):
     # 需要抓取的开始和结束日期
     start_date = datetime.datetime(2018, 1, 1, 0)
     end_date = datetime.datetime(2018, 12, 31, 23)
-    delta_date = datetime.timedelta(days=30)
+    delta_date = datetime.timedelta(days=0.5)
 
     # 每次抓取一天的数据
     start_stamp = start_date
@@ -107,13 +103,14 @@ def GetSearchContent(key):
     global sheet
 
     outfile = xlwt.Workbook(encoding='utf-8')
-
+    sheet = outfile.add_sheet('others')
+    initXLS()
     while end_stamp <= end_date:
         page = 1
 
         # 每一天使用一个sheet存储数据
-        sheet = outfile.add_sheet(str(start_stamp.strftime("%Y-%m-%d-%H")))
-        initXLS()
+        # sheet = outfile.add_sheet(str(start_stamp.strftime("%Y-%m-%d-%H")))
+        # initXLS()
 
         # 通过构建URL实现每一天的查询
         url = current_url + '&typeall=1&suball=1&timescope=custom:' + str(
@@ -135,7 +132,7 @@ def handlePage():
     while True:
         # 之前认为可能需要sleep等待页面加载，后来发现程序执行会等待页面加载完毕
         # sleep的原因是对付微博的反爬虫机制，抓取太快可能会判定为机器人，需要输入验证码
-        time.sleep(2)
+        time.sleep(1)
         # 先行判定是否有内容
         if checkContent():
             print "getContent"
@@ -178,7 +175,7 @@ def checkNext():
 
 # 在添加每一个sheet之后，初始化字段
 def initXLS():
-    name = ['博主昵称', '博主主页', '微博认证', '微博达人', '微博内容', '发布时间', '微博地址', '微博来源', '转发', '评论', '赞']
+    name = ['博主昵称', '博主主页', '微博认证', '微博内容', '发布时间', '转发', '评论', '赞']
 
     global row
     global outfile
@@ -188,7 +185,7 @@ def initXLS():
     for i in range(len(name)):
         sheet.write(row, i, name[i])
     row = row + 1
-    outfile.save("./crawl_output_YS.xls")
+    outfile.save("./weibo_search_result_africa_fever.xls")
 
 
 # 将dic中的内容写入excel
