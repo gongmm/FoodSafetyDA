@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 class QQNews(scrapy.Spider):
     name = 'sougou'
-    keyword = '食品安全'
+    keyword = '非洲猪瘟'
     page = 1
     # start_url='https://www.sogou.com/sogou?site=news.qq.com&query='+keyword+'&page='+str(page)
     # start_urls=[
