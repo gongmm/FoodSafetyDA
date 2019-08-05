@@ -43,9 +43,9 @@ class WeiBoSpider(scrapy.Spider):
         #         yield Request(url=self.get_url(keyword), callback=self.parse,headers=self.headers,
         #                       meta={'keyword':keyword,'topic_id':topic_id})
 
-        keyword = '海鲜 小龙虾 武汉'
-        keyword = '猪肉'
-        topic_id = 46
+        # keyword = '海鲜 小龙虾 武汉'
+        keyword = '疫情 禽流感'
+        topic_id = 21
         yield Request(url=self.get_url(keyword), callback=self.parse, headers=self.headers,
                       meta={'keyword': keyword, 'topic_id': topic_id})
 

@@ -12,7 +12,8 @@ from News.items import NewsItem
 class FoodMateDatabasePipeline(object):
     def open_spider(self, spider):
         self.conn = MongoClient(host='127.0.0.1', port=27017)
-        self.client = self.conn.news.thepaper
+        # self.client = self.conn.news.thepaper_search
+        self.client = self.conn.news.sougou_search
 
     def process_item(self, item, spider):
         if isinstance(item, NewsItem):

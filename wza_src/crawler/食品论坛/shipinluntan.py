@@ -75,8 +75,10 @@ def parse_search_page():
     # 获得搜索结果
     sel = etree.HTML(browser.page_source)
     print("====== Crawling Page: " + str(1) + "========")
+    page_num = len(sel.xpath("//div[@class='pg']/a"))
 
     div_content = sel.xpath('//div[@id="threadlist"]//h3')
+    items = []
     for index, ul_content in enumerate(div_content):
         print("====== Crawling Item: " + str(index) + "========")
         # for index in range(len(div_content)):
@@ -89,8 +91,20 @@ def parse_search_page():
         url = ul_content.xpath(".//a/@href")[0]
         print(url)
         pub_date = ul_content.xpath('../p[3]/span[1]/text()')[0]
+        reply_num = re.findall('\d+', str(ul_content.xpath('../p[1]/text()')[0]))[0]
+        read_num = re.findall('\d+', str(ul_content.xpath('../p[1]/text()')[0]))[1]
+        '''存数据'''
+        item = {}
+        item['time'] = pub_date
+        item['title'] = title
+        item['reply_num'] = reply_num
+        item['read_num'] = read_num
+        if '2018-1-1' < pub_date < '2019-1-1':
+            items.append(item)
         # print(time)
-        parse(url, titles, pub_date)
+        # parse(url, titles, pub_date)
+    if len(items) > 0:
+        save('luntan.csv', items)
     # 是否存在下一页
     if sel.xpath("//div[@class='pg']"):
         next_page(sel.xpath("//div[@class='pg']/a/@href")[0])
@@ -99,6 +113,7 @@ def parse_search_page():
 def parse(url, title, pub_date):
     content_str = ""
     index = 0
+    number = 0
     while True:
         index += 1
         # print("parse" + url)
@@ -114,6 +129,7 @@ def parse(url, title, pub_date):
                 remove_chars = '[0-9a-zA-Z’!"#$%&\'()*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~]+'
                 content_str += re.sub(remove_chars, '', review).strip()
             content_str += '\n'
+            number += 1
             # review = td_content.xpath('./td[@class="t_f"]')
         # print(content_str)
         if content_sel.xpath('//div[@class="pgbtn"]'):
@@ -126,7 +142,9 @@ def parse(url, title, pub_date):
     item['time'] = pub_date
     item['title'] = title
     item['content'] = content_str
-    save('luntan.csv', item)
+    item['number'] = number
+    if '2018/01/01' < pub_date < '2019/01/01':
+        save('luntan.csv', item)
 
 
 def next_page(url):
@@ -134,6 +152,7 @@ def next_page(url):
     page_source = requests.get(allow_domain + url, headers=headers)
     sel = etree.HTML(page_source.text)
     div_content = sel.xpath('//div[@id="threadlist"]//h3')
+    items = []
     for index, ul_content in enumerate(div_content):
         print("====== Crawling Item: " + str(index) + "========")
         # for index in range(len(div_content)):
@@ -146,18 +165,31 @@ def next_page(url):
         url = ul_content.xpath(".//a/@href")[0]
         print(url)
         pub_date = ul_content.xpath('../p[3]/span[1]/text()')[0]
+        reply_num = re.findall('\d+', str(ul_content.xpath('../p[1]/text()')[0]))[0]
+        read_num = re.findall('\d+', str(ul_content.xpath('../p[1]/text()')[0]))[1]
+        '''存数据'''
+        item = {}
+        item['time'] = pub_date
+        item['title'] = title
+        item['reply_num'] = reply_num
+        item['read_num'] = read_num
+        if '2018-1-1' < pub_date < '2019-1-1':
+            items.append(item)
         # print(time)
-        parse(url, titles, pub_date)
+        # parse(url, titles, pub_date)
+    if len(items) > 0:
+        save('luntan.csv', items)
     # 是否存在下一页
-    if sel.xpath("//div[@class='pg']"):
-        next_page(sel.xpath("//div[@class='pg']/a/@href")[0])
+    if sel.xpath("//div[@class='pg']/a")[-1].text == '下一页':
+        next_page(sel.xpath("//div[@class='pg']/a/@href")[-1])
 
 
-def save(filename, item):
+def save(filename, items):
     with open(filename, 'a+', encoding='utf-8', newline='') as f:
         # f = open(filename,'a+',encoding='utf-8',newline = '')
         writer = csv.writer(f, dialect="excel")
-        writer.writerow([item['time'], item['title'], item['content']])
+        for item in items:
+            writer.writerow([item['time'], item['title'], item['reply_num'], item['read_num']])
 
 
 if __name__ == '__main__':
