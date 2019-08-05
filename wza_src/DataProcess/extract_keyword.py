@@ -1,6 +1,8 @@
 from jieba.analyse import *
 import os
 
+cluster_matrix_dir = os.path.join('cluster', 'cluster_matrix')
+
 
 def get_all_files(path):
     """
@@ -72,7 +74,8 @@ def extract_topic(path):
     topic_keywords = []
     events_path = os.path.join(path, 'events')
     events = os.listdir(events_path)
-    for event in events:
+    # 按照事件顺序组织结果列表
+    for event in sorted(events, key=lambda x: int(x[5:])):
         keywords = extract_event(os.path.join(events_path, event))
         topic_keywords.append(keywords)
     save_keywords(path, topic_keywords)
@@ -102,7 +105,7 @@ def save_keywords(path, topic_keywords):
 
 if __name__ == '__main__':
     data_path = 'topic_doc'
-    topic_num = 2
+    topic_num = len(os.listdir(cluster_matrix_dir))
     for index in range(topic_num):
         topic_path = os.path.join(data_path, 'topic' + str(index))
         extract_topic(topic_path)
