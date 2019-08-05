@@ -36,7 +36,7 @@ doc_topic_csv = os.path.join(result_dir, 'doc_topic.csv')
 def sort_key(s):
     if s:
         try:
-            c = re.findall('\d+', s)[1]
+            c = re.findall('\\d+', s)[1]
         except:
             c = -1
         return int(c)
