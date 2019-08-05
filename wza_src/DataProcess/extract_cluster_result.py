@@ -76,6 +76,8 @@ def save_topic_cluster_result(topic_index, cluster_topic_result):
     # 如果不存在则创建目录
     if not os.path.exists(events_dir):
         os.makedirs(events_dir)
+    # 清空文件夹
+    shutil.rmtree(events_dir)
 
     for event_index, event_docs in enumerate(cluster_topic_result):
         event_dir = os.path.join(events_dir, 'event' + str(event_index))

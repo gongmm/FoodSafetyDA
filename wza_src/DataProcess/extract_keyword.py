@@ -1,5 +1,6 @@
 from jieba.analyse import *
 import os
+import shutil
 
 cluster_matrix_dir = os.path.join('cluster', 'cluster_matrix')
 
@@ -93,6 +94,8 @@ def save_keywords(path, topic_keywords):
     """
     events_keyword_dir = 'events_keyword'
     save_path = os.path.join(path, events_keyword_dir)
+    # 清空文件夹
+    shutil.rmtree(save_path)
     # 如果不存在则创建目录
     if not os.path.exists(save_path):
         os.makedirs(save_path)
