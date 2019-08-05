@@ -1,6 +1,7 @@
 from jieba.analyse import *
 import os
 import shutil
+from tqdm import tqdm
 
 cluster_matrix_dir = os.path.join('cluster', 'cluster_matrix')
 
@@ -59,7 +60,6 @@ def extract_event(path):
     for file in files:
         with open(file, 'r', encoding='utf-8') as f:
             content += f.read()
-    print(path)
     return extract_single_doc(content)
 
 
@@ -72,11 +72,12 @@ def extract_topic(path):
     Returns:
 
     """
+    print(path)
     topic_keywords = []
     events_path = os.path.join(path, 'events')
     events = os.listdir(events_path)
     # 按照事件顺序组织结果列表
-    for event in sorted(events, key=lambda x: int(x[5:])):
+    for event in tqdm(sorted(events, key=lambda x: int(x[5:]))):
         keywords = extract_event(os.path.join(events_path, event))
         topic_keywords.append(keywords)
     save_keywords(path, topic_keywords)
