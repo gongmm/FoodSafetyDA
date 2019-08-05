@@ -1,4 +1,4 @@
-﻿# ignore data & result of src
+# ignore data & result of src
 wqm_src/**/data/*
 wqm_src/**/result/*
 wqm_src/**/corpus/*
@@ -187,3 +187,4 @@ wza_src/CutNews/anns_data/
 wza_src/CutNews/origin_data/
 wza_src/YEDDA-new/food_data/
 wza_src/YEDDA-new/demotext/
+yiner_src/crawler/weibo_search_spider/*.xls

@@ -20,7 +20,7 @@ class MWeiBoSpiderPipeline(object):
             line = [item['time'], item['content'], item['topic_id'], item['topic'], item['reposts_count'],
                     item['comments_count'], item['attitudes_count']]  # 把数据每一行整理出来
             self.ws.append(line)  # 将数据一行的形式添加到xlsx中
-            self.wb.save('weibo.xlsx')  # 保存xlsx文件
+            self.wb.save('weibo_avian.xlsx')  # 保存xlsx文件
             return item
 
 

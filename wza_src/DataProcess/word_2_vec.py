@@ -8,7 +8,7 @@ from sklearn.externals import joblib
 corpus = []
 word2vec_model_file_100 = 'model/word2vec_100.model'
 word2vec_model_file_50 = 'model/word2vec_50.model'
-corpus_file='corpus/news_content_corpus.txt'
+corpus_file = 'corpus/news_content_corpus.txt'
 
 
 def get_corpus():
@@ -43,8 +43,8 @@ def evaluate():
     except KeyError:
         sim1 = 0
         sim2 = 0
-        most_similar_1 = 0
-        most_similar_2 = 0
+        most_similar_1 = []
+        most_similar_2 = []
     print(u'黑作坊 和 小作坊 的相似度为 ', sim1)
     print(u'猪瘟 和 瘦肉精 的相似度为 ', sim2)
     print('=====与“三无”最相似的词=====')
