@@ -9,7 +9,7 @@ Created on 2016-04-28
 实现：采取selenium测试工具，模拟微博登录，结合PhantomJS/Firefox，分析DOM节点后，采用Xpath对节点信息进行获取，实现重要信息的抓取
 
 """
-
+import os
 import time
 import datetime
 import re
@@ -18,7 +18,8 @@ from selenium.webdriver.common.keys import Keys
 import xlwt
 
 option = webdriver.ChromeOptions()
-option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
+# option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
+option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 4")
 driver = webdriver.Chrome(chrome_options=option)
 # driver = webdriver.Chrome()
 
@@ -91,7 +92,7 @@ def GetSearchContent(key):
     global page
 
     # 需要抓取的开始和结束日期
-    start_date = datetime.datetime(2018, 1, 1, 0)
+    start_date = datetime.datetime(2018, 7, 25, 0)
     end_date = datetime.datetime(2018, 12, 31, 23)
     delta_date = datetime.timedelta(days=0.5)
 
@@ -101,10 +102,10 @@ def GetSearchContent(key):
 
     global outfile
     global sheet
-
-    outfile = xlwt.Workbook(encoding='utf-8')
-    sheet = outfile.add_sheet('others')
-    initXLS()
+    if not os.path.exists('weibo_search_result_africa_fever.xls'):
+        outfile = xlwt.Workbook(encoding='utf-8')
+        sheet = outfile.add_sheet('others')
+        initXLS()
     while end_stamp <= end_date:
         page = 1
 
@@ -156,11 +157,17 @@ def checkContent():
     # 有内容的前提是有“导航条”？错！只有一页内容的也没有导航条
     # 但没有内容的前提是有“pl_noresult”
     try:
-        driver.find_element_by_xpath("//div[@class='m-error']")
-        flag = False
+        driver.find_element_by_xpath("//div[@class='card-no-result']")
+        flag_1 = False
     except:
-        flag = True
-    return flag
+        flag_1 = True
+
+    try:
+        driver.find_element_by_xpath("//div[@class='m-error']")
+        flag_2 = False
+    except:
+        flag_2 = True
+    return flag_1 and flag_2
 
 
 # 判断是否有下一页按钮
@@ -198,7 +205,7 @@ def writeXLS(dic):
         for i in range(len(dic[k])):
             sheet.write(row, i, dic[k][i])
         row = row + 1
-    outfile.save("./crawl_output_YS.xls")
+    outfile.save("./weibo_search_result_africa_fever.xls")
 
 
 # 在页面有内容的前提下，获取内容
