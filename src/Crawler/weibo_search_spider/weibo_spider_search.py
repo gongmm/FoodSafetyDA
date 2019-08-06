@@ -1,26 +1,26 @@
 # coding=utf-8
 
-"""  
-Created on 2016-04-28 
-@author: xuzhiyuan
+"""
 
 功能: 爬取新浪微博的搜索结果,支持高级搜索中对搜索时间的限定
 网址：http://s.weibo.com/
 实现：采取selenium测试工具，模拟微博登录，结合PhantomJS/Firefox，分析DOM节点后，采用Xpath对节点信息进行获取，实现重要信息的抓取
 
 """
+import csv
 import os
 import time
 import datetime
 import re
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import xlwt
 
 option = webdriver.ChromeOptions()
-# option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
-option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 4")
+option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
+# option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 4")
 driver = webdriver.Chrome(chrome_options=option)
+
+
 # driver = webdriver.Chrome()
 
 
@@ -33,7 +33,7 @@ driver = webdriver.Chrome(chrome_options=option)
 def LoginWeibo(username, password):
     try:
         # 输入用户名/密码登录
-        print u'准备登陆Weibo.cn网站...'
+        print('准备登陆Weibo.cn网站...')
         driver.get('http://weibo.com/login.php')
         driver.implicitly_wait(5)
         elem_user = driver.find_element_by_xpath('//*[@id="loginname"]')
@@ -54,17 +54,17 @@ def LoginWeibo(username, password):
             pass
 
         # 获取Coockie 推荐资料：http://www.cnblogs.com/fnng/p/3269450.html
-        print 'Crawl in ', driver.current_url
-        print u'输出Cookie键值对信息:'
+        print('Crawl in ' + driver.current_url)
+        print('输出Cookie键值对信息:')
         for cookie in driver.get_cookies():
-            print cookie
+            print(cookie)
             for key in cookie:
-                print key, cookie[key]
-        print u'登陆成功...'
-    except Exception, e:
-        print "Error: ", e
+                print(key + cookie[key])
+        print('登陆成功...')
+    except Exception as e:
+        print("Error: " + str(e))
     finally:
-        print u'End LoginWeibo!\n'
+        print('End LoginWeibo!')
 
 
 # ********************************************************************************
@@ -75,12 +75,12 @@ def LoginWeibo(username, password):
 
 def GetSearchContent(key):
     driver.get("http://s.weibo.com/")
-    print '搜索热点主题：', key.decode('utf-8')
+    print('搜索热点主题：'+ key)
 
     # 输入关键词并点击搜索
     # item_inp = driver.find_element_by_xpath("//input[@class='searchInp_form']")
     item_inp = driver.find_element_by_xpath("//div[@class='search-input']/input")
-    item_inp.send_keys(key.decode('utf-8'))
+    item_inp.send_keys(key)
     item_inp.send_keys(Keys.RETURN)  # 采用点击回车直接搜索
 
     # 获取搜索词的URL，用于后期按时间查询的URL拼接
@@ -100,12 +100,8 @@ def GetSearchContent(key):
     start_stamp = start_date
     end_stamp = start_date + delta_date
 
-    global outfile
-    global sheet
-    if not os.path.exists('weibo_search_result_africa_fever.xls'):
-        outfile = xlwt.Workbook(encoding='utf-8')
-        sheet = outfile.add_sheet('others')
-        initXLS()
+    if not os.path.exists('data/weibo_search_result_africa_fever.csv'):
+        init_csv()
     while end_stamp <= end_date:
         page = 1
 
@@ -136,7 +132,7 @@ def handlePage():
         time.sleep(1)
         # 先行判定是否有内容
         if checkContent():
-            print "getContent"
+            print("getContent")
             getContent()
             # 先行判定是否有下一页按钮
             if checkNext():
@@ -145,10 +141,10 @@ def handlePage():
                 next_page_btn.click()
                 time.sleep(5)
             else:
-                print "no Next"
+                print("no Next")
                 break
         else:
-            print "no Content"
+            print("no Content")
             break
 
 
@@ -181,32 +177,21 @@ def checkNext():
 
 
 # 在添加每一个sheet之后，初始化字段
-def initXLS():
-    name = ['博主昵称', '博主主页', '微博认证', '微博内容', '发布时间', '转发', '评论', '赞']
-
-    global row
-    global outfile
-    global sheet
-
-    row = 0
-    for i in range(len(name)):
-        sheet.write(row, i, name[i])
-    row = row + 1
-    outfile.save("./weibo_search_result_africa_fever.xls")
+def init_csv(writefile='data/weibo_search_result_africa_fever.csv'):
+    name = ['nick_name', 'homepage_url', 'certification', 'content', 'pub_date', 'repost', 'comment', 'like']
+    with open(writefile, 'w', encoding='utf-8', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(name)
 
 
 # 将dic中的内容写入excel
-def writeXLS(dic):
-    global row
-    global outfile
-    global sheet
-
-    for k in dic:
-        for i in range(len(dic[k])):
-            sheet.write(row, i, dic[k][i])
-        row = row + 1
-    outfile.save("./weibo_search_result_africa_fever.xls")
-
+def write_to_csv(dic, writefile='data/weibo_search_result_africa_fever.csv'):
+    print("=====正在写入=====")
+    with open(writefile, 'w', encoding='utf-8', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        for item in dic.values():
+            csv_writer.writerow(item)
+    print("=====写入完成=====")
 
 # 在页面有内容的前提下，获取内容
 def getContent():
@@ -215,7 +200,7 @@ def getContent():
 
     # 在运行过程中微博数==0的情况，可能是微博反爬机制，需要输入验证码
     if len(nodes) == 0:
-        raw_input("请在微博页面输入验证码！")
+        input("请在微博页面输入验证码！")
         url = driver.current_url
         driver.get(url)
         getContent()
@@ -224,10 +209,10 @@ def getContent():
     dic = {}
 
     global page
-    print str(start_stamp.strftime("%Y-%m-%d-%H"))
-    print u'页数:', page
+    print(str(start_stamp.strftime("%Y-%m-%d-%H")))
+    print('页数: ' + str(page))
     page = page + 1
-    print u'微博数量', len(nodes)
+    print('微博数量' + str(len(nodes)))
 
     for i in range(len(nodes)):
         dic[i] = []
@@ -237,7 +222,7 @@ def getContent():
             BZNC = info.find_element_by_xpath("./div[2]/a[1]").text
         except:
             BZNC = ''
-        print u'博主昵称:', BZNC
+        print('博主昵称:' + BZNC)
         dic[i].append(BZNC)
 
         try:
@@ -245,7 +230,7 @@ def getContent():
                 ".//div[@class='info']/div[2]/a[1]").get_attribute("href")
         except:
             BZZY = ''
-        print u'博主主页:', BZZY
+        print('博主主页:' + BZZY)
         dic[i].append(BZZY)
 
         try:
@@ -253,45 +238,22 @@ def getContent():
                 ".//div[@class='info']/div[2]/a[2]").get_attribute('title')  # 若没有认证则不存在节点
         except:
             WBRZ = ''
-        print '微博认证:', WBRZ
+        print('微博认证:' + WBRZ)
         dic[i].append(WBRZ)
-
-        # try:
-        #     WBDR = nodes[i].find_element_by_xpath(
-        #         ".//div[@class='info']/a[@class='ico_club']").get_attribute('title')  # 若非达人则不存在节点
-        # except:
-        #     WBDR = ''
-        # print '微博达人:', WBDR
-        # dic[i].append(WBDR)
 
         try:
             WBNR = nodes[i].find_element_by_xpath(".//div[@class='content']/p[@class='txt']").text
         except:
             WBNR = ''
-        print '微博内容:', WBNR
+        print('微博内容:' + WBNR)
         dic[i].append(WBNR)
 
         try:
             FBSJ = nodes[i].find_element_by_xpath(".//div[@class='content']/p[@class='from']/a[1]").text
         except:
             FBSJ = ''
-        print u'发布时间:', FBSJ
+        print('发布时间:' + FBSJ)
         dic[i].append(FBSJ)
-
-        # try:
-        #     WBDZ = nodes[i].find_element_by_xpath(
-        #         ".//div[@class='feed_from W_textb']/a[@class='W_textb']").get_attribute("href")
-        # except:
-        #     WBDZ = ''
-        # print '微博地址:', WBDZ
-        # dic[i].append(WBDZ)
-
-        # try:
-        #     WBLY = nodes[i].find_element_by_xpath(".//div[@class='feed_from W_textb']/a[@rel]").text
-        # except:
-        #     WBLY = ''
-        # print '微博来源:', WBLY
-        # dic[i].append(WBLY)
 
         try:
             ZF_TEXT = nodes[i].find_element_by_xpath(".//div[@class='card-act']//li[2]").text
@@ -305,7 +267,7 @@ def getContent():
 
         except:
             ZF = 0
-        print '转发:', ZF
+        print('转发:' + str(ZF))
         dic[i].append(str(ZF))
 
         try:
@@ -319,7 +281,7 @@ def getContent():
                 PL = int(PL)
         except:
             PL = 0
-        print '评论:', PL
+        print('评论:' + str(PL))
         dic[i].append(str(PL))
 
         try:
@@ -333,13 +295,11 @@ def getContent():
                 ZAN = int(ZAN)
         except:
             ZAN = 0
-        print '赞:', ZAN
+        print('赞:' + str(ZAN))
         dic[i].append(str(ZAN))
 
-        print '\n'
-
     # 写入Excel
-    writeXLS(dic)
+    write_to_csv(dic)
 
 
 # *******************************************************************************
