@@ -8,7 +8,9 @@
 
 """
 import csv
+import io
 import os
+import sys
 import time
 import datetime
 import re
@@ -19,7 +21,7 @@ option = webdriver.ChromeOptions()
 option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
 # option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 4")
 driver = webdriver.Chrome(chrome_options=option)
-
+# sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='gb18030')  # 改变标准输出的默认编码
 
 # driver = webdriver.Chrome()
 
@@ -92,8 +94,8 @@ def GetSearchContent(key):
     global page
 
     # 需要抓取的开始和结束日期
-    start_date = datetime.datetime(2018, 7, 25, 0)
-    end_date = datetime.datetime(2018, 12, 31, 23)
+    start_date = datetime.datetime(2018, 12, 29, 12)
+    end_date = datetime.datetime(2019, 1, 1, 0)
     delta_date = datetime.timedelta(days=0.5)
 
     # 每次抓取一天的数据
@@ -187,7 +189,7 @@ def init_csv(writefile='data/weibo_search_result_africa_fever.csv'):
 # 将dic中的内容写入excel
 def write_to_csv(dic, writefile='data/weibo_search_result_africa_fever.csv'):
     print("=====正在写入=====")
-    with open(writefile, 'w', encoding='utf-8', newline='') as csv_file:
+    with open(writefile, 'a', encoding='utf-8', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         for item in dic.values():
             csv_writer.writerow(item)
@@ -245,7 +247,7 @@ def getContent():
             WBNR = nodes[i].find_element_by_xpath(".//div[@class='content']/p[@class='txt']").text
         except:
             WBNR = ''
-        print('微博内容:' + WBNR)
+        # print('微博内容:' + WBNR)
         dic[i].append(WBNR)
 
         try:

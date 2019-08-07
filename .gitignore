@@ -187,3 +187,5 @@ src/CutNews/origin_data/
 src/YEDDA-new/food_data/
 src/YEDDA-new/demotext/
 src/crawler/weibo_search_spider/*.xls
+src/SentimentAnalyse/format_data/*
+src/SentimentAnalyse/origin_data/
