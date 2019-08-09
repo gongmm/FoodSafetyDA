@@ -3,11 +3,14 @@ import numpy as np
 from sklearn.externals import joblib
 import matplotlib.pylab as plt
 from state_transition import get_all_state_transition
+from sentiment_fever import calculate_fever_by_topic
 
 result_dir = 'result'
 if not os.path.exists(result_dir):
     os.makedirs(result_dir)
 
+
+# main functions
 def trend_predict(total_list):
     """根据所有主题/事件的热度值进行趋势预测并将预测的状态存入文件中
 
@@ -24,6 +27,19 @@ def trend_predict(total_list):
     joblib.dump(states_list, state_file)
 
 
+def analyse_result(state_file):
+    """分析所有主题/事件的状态并画出趋势图
+    Args:
+        state_file: 存放状态列表的文件路径
+    """
+    states_vec_list = joblib.load(state_file)
+    for i in range(len(states_vec_list)):
+        state_indice = get_state_index(states_vec_list[i])
+        file = os.path.join(result_dir, 'topic' + str(i) + '_trend.png')
+        plot_states(state_indice, file)
+
+
+# internal functions
 def predict_state(matrix, init_state):
     """根据状态转移概率矩阵和初始状态求出每个月的状态向量
 
@@ -41,18 +57,6 @@ def predict_state(matrix, init_state):
         state = np.matmul(init_state, matrix_power)
         states.append(state)
     return states
-
-
-def analyse_result(state_file):
-    """分析所有主题/事件的状态并画出趋势图
-    Args:
-        state_file: 存放状态列表的文件路径
-    """
-    states_vec_list = joblib.load(state_file)
-    for i in range(len(states_vec_list)):
-        state_indice = get_state_index(states_vec_list[i])
-        file = os.path.join(result_dir, 'topic' + str(i) + '_trend.png')
-        plot_states(state_indice, file)
 
 
 def get_state_index(states_vec):
@@ -82,7 +86,8 @@ def plot_states(state_indice, file):
         file: 画图存放的文件路径
     """
     trend_values = get_trend_value(state_indice)
-    plt.plot(trend_values)
+    x = [i for i in range(1, 13)]
+    plt.plot(x, trend_values)
     plt.xlabel('Month')
     plt.ylabel('trend value')
     plt.title('trend analysis for topic')
@@ -127,5 +132,8 @@ def get_state_slope(state_index):
 
 
 if __name__ == '__main__':
-    file = os.path.join(result_dir, 'topic_trend.png')
-    plot_states([2, 2, 3, 3, 2, 2, 1, 2, 4, 3, 2, 1], file)
+    topic_list = calculate_fever_by_topic(topic_id=21)
+    total_list = [topic_list]
+    trend_predict(total_list)
+    state_file = os.path.join(result_dir, 'states')
+    analyse_result(state_file)
