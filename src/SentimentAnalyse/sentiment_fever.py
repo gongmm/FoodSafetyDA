@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import numpy as np
 import chardet
+from matplotlib import pyplot as plt
 
 origin_path = 'origin_data'
 format_path = 'format_data'
@@ -117,17 +118,17 @@ def calculate_core(number_list, w):
 
 
 def calculate_fever_by_topic(topic_id, readfile='format_data/sentiment_topic_analysis_info.csv'):
-    w1 = 0.4
+    w1 = 0.5
     w2 = 0.3
-    w3 = 0.3
+    w3 = 0.2
     post_w = 0.8 * w2
     reply_w = 0.15 * w2
     read_w = 0.05 * w2
 
-    weibo_post_w = 0.5 * w3
-    weibo_comment_w = 0.2 * w3
+    weibo_post_w = 0.4 * w3
+    weibo_comment_w = 0.3 * w3
     weibo_like_w = 0.1 * w3
-    weibo_repost_w = 0.1 * w3
+    weibo_repost_w = 0.2 * w3
 
     news_number = get_news_number_by_topic(topic_id)
     forum_post_number, forum_reply_number, forum_read_number = get_forum_info_by_topic(topic_id)
@@ -153,10 +154,28 @@ def format_data():
         reformat_date(file_path, result_path)
 
 
+def draw_fever_trend(topic_id):
+    fever_list = calculate_fever_by_topic(topic_id)
+    x = [i for i in range(1, 13)]
+    # 绘制折线图，设置线宽
+    plt.plot(x, fever_list, linewidth=2)
+
+    # 设置图表标题，并给坐标轴加上标签
+    plt.title("sentiment fever by month", fontsize=24)
+    plt.xlabel("month", fontsize=14)
+    plt.ylabel("fever", fontsize=14)
+    # 设置刻度标记的大小
+    plt.xticks([i for i in range(1, 13)])
+    plt.tick_params(axis='both', labelsize=14)
+
+    plt.show()
+
+
 if __name__ == '__main__':
     # format_data()
     # gbk_2_utf('format_data/forum_topic21.csv', 'format_data/forum_topic21_format.csv')
     # reformat_date("format_data/all_news_data_utf_topic.csv", "format_data/all_news_data_utf_topic.csv")
     topic_num = 21
-    calculate_fever_by_topic(topic_id=21)
+    # calculate_fever_by_topic(topic_id=21)
+    draw_fever_trend(topic_id=21)
     # calculate()
