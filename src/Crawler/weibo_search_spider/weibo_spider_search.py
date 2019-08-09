@@ -75,7 +75,7 @@ def LoginWeibo(username, password):
 #                     考虑没有搜索结果、翻页效果的情况
 # ********************************************************************************
 
-def GetSearchContent(key):
+def GetSearchContent(key, topic_id):
     driver.get("http://s.weibo.com/")
     print('搜索热点主题：'+ key)
 
@@ -94,16 +94,16 @@ def GetSearchContent(key):
     global page
 
     # 需要抓取的开始和结束日期
-    start_date = datetime.datetime(2018, 12, 29, 12)
-    end_date = datetime.datetime(2019, 1, 1, 0)
-    delta_date = datetime.timedelta(days=0.5)
+    start_date = datetime.datetime(2018, 8, 1, 0)
+    end_date = datetime.datetime(2018, 9, 1, 0)
+    delta_date = datetime.timedelta(hours=6)
 
     # 每次抓取一天的数据
     start_stamp = start_date
     end_stamp = start_date + delta_date
-
-    if not os.path.exists('data/weibo_search_result_africa_fever.csv'):
-        init_csv()
+    file_name = 'data/weibo_topic'+ str(topic_id) + '.csv'
+    if not os.path.exists(file_name):
+        init_csv(writefile=file_name)
     while end_stamp <= end_date:
         page = 1
 
@@ -115,8 +115,7 @@ def GetSearchContent(key):
         url = current_url + '&typeall=1&suball=1&timescope=custom:' + str(
             start_stamp.strftime("%Y-%m-%d-%H")) + ':' + str(end_stamp.strftime("%Y-%m-%d-%H")) + '&Refer=g'
         driver.get(url)
-
-        handlePage()  # 处理当前页面内容
+        handlePage(file_name)  # 处理当前页面内容
 
         start_stamp = end_stamp
         end_stamp = end_stamp + delta_date
@@ -127,7 +126,7 @@ def GetSearchContent(key):
 # ********************************************************************************
 
 # 页面加载完成后，对页面内容进行处理
-def handlePage():
+def handlePage(file_name):
     while True:
         # 之前认为可能需要sleep等待页面加载，后来发现程序执行会等待页面加载完毕
         # sleep的原因是对付微博的反爬虫机制，抓取太快可能会判定为机器人，需要输入验证码
@@ -135,13 +134,13 @@ def handlePage():
         # 先行判定是否有内容
         if checkContent():
             print("getContent")
-            getContent()
+            getContent(file_name)
             # 先行判定是否有下一页按钮
             if checkNext():
                 # 拿到下一页按钮
                 next_page_btn = driver.find_element_by_xpath("//a[@class='next']")
                 next_page_btn.click()
-                time.sleep(5)
+                # time.sleep(5)
             else:
                 print("no Next")
                 break
@@ -196,16 +195,17 @@ def write_to_csv(dic, writefile='data/weibo_search_result_africa_fever.csv'):
     print("=====写入完成=====")
 
 # 在页面有内容的前提下，获取内容
-def getContent():
+def getContent(file_name):
     # 寻找到每一条微博的class
     nodes = driver.find_elements_by_xpath("//div[@class='card']")
 
     # 在运行过程中微博数==0的情况，可能是微博反爬机制，需要输入验证码
     if len(nodes) == 0:
-        input("请在微博页面输入验证码！")
+        driver.refresh()
+        # input("请在微博页面输入验证码！")
         url = driver.current_url
         driver.get(url)
-        getContent()
+        getContent(file_name)
         return
 
     dic = {}
@@ -301,8 +301,19 @@ def getContent():
         dic[i].append(str(ZAN))
 
     # 写入Excel
-    write_to_csv(dic)
+    write_to_csv(dic, file_name)
 
+
+def get_keywords(start, end):
+    id_list = []
+    word_list = []
+    with open('keywords.txt', 'r') as f:
+        for info in f.readlines():
+            topic_id = info.split(',')[0]
+            topic_word = info.split(',')[-1].strip()
+            id_list.append(topic_id)
+            word_list.append(topic_word)
+    return id_list[start:end+1], word_list[start:end+1]
 
 # *******************************************************************************
 #                                程序入口
@@ -315,6 +326,12 @@ if __name__ == '__main__':
     # 操作函数
     LoginWeibo(username, password)  # 登陆微博
 
-    # 搜索热点微博 爬取评论
-    key = '非洲猪瘟'
-    GetSearchContent(key)
+    # id_list, word_list = get_keywords(0, 8)
+    # id_list, word_list = get_keywords(9, 17)
+    # id_list, word_list = get_keywords(18, 26)
+    id_list, word_list = get_keywords(27, 35)
+
+    for index in range(len(word_list)):
+        # 搜索热点微博 爬取评论
+        # key = '非洲猪瘟'
+        GetSearchContent(word_list[index], id_list[index])

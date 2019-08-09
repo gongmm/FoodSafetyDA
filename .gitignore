@@ -1,34 +1,11 @@
-# ignore data & result of src
-wqm_src/**/data/*
-wqm_src/**/result/*
-wqm_src/**/corpus/*
-wqm_src/**/*.csv
-wqm_src/**/m4a_audios/*
-wqm_src/**/wav_audios/*
-dn_src/**/data/*
-dn_src/**/result/*
-dn_src/**/corpus/*
-dn_src/**/*.csv
-dn_src/**/*.txt
-dn_src/**/demotext
-dn_src/**/shipintest
-dn_src/**/*.png
-dn_src/**/tex2pdf
-dn_src/**/.idea
-dn_src/**/ckpt
-dn_src/**/word2vec_models
-dn_src/**/models
-dn_src/**/doc_topic
-dn_src/**/txt
-dn_src/**/*.xls
-
+﻿# ignore data & result of src
 src/**/ts_videos
 src/**/wav_audios
 src/**/words_result
 src/**/csv
-src/crawler/**/*.txt
-src/crawler/**/*.csv
-src/crawler/**/*.mp4
+src/Crawler/**/*.txt
+src/Crawler/**/*.csv
+src/Crawler/**/*.mp4
 
 src/**/.idea
 src/**/ckpt
@@ -37,12 +14,12 @@ src/**/data
 src/**/corpus
 src/CutNews/data
 src/CutNews/anns_data
-src/crawler/**/*.txt
-src/crawler/**/*.csv
-src/crawler/**/*.json
-src/crawler/**/*.png
-src/crawler/**/*.xlsx
-src/crawler/**/*.json
+src/Crawler/**/*.txt
+src/Crawler/**/*.csv
+src/Crawler/**/*.json
+src/Crawler/**/*.png
+src/Crawler/**/*.xlsx
+src/Crawler/**/*.json
 src/ChineseNER/wiki_100.utf8
 src/YEDDA-new/food_data
 src/YEDDA-new/shipintest
@@ -186,6 +163,7 @@ src/CutNews/anns_data/
 src/CutNews/origin_data/
 src/YEDDA-new/food_data/
 src/YEDDA-new/demotext/
-src/crawler/weibo_search_spider/*.xls
+src/Crawler/weibo_search_spider/*.xls
 src/SentimentAnalyse/format_data/*
 src/SentimentAnalyse/origin_data/
+!src/Crawler/weibo_search_spider/keywords.txt
