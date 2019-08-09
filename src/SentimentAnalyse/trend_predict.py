@@ -86,12 +86,13 @@ def plot_states(state_indice, file):
         file: 画图存放的文件路径
     """
     trend_values = get_trend_value(state_indice)
-    x = [i for i in range(1, 13)]
+    n = len(state_indice)
+    x = [i for i in range(1, n+1)]
     plt.plot(x, trend_values)
     plt.xlabel('Month')
     plt.ylabel('trend value')
     plt.title('trend analysis for topic')
-    plt.xticks([i for i in range(1, 13)])
+    plt.xticks([i for i in range(1, n+1)])
     plt.yticks([2*i for i in range(5)])
     plt.savefig(file)
 
