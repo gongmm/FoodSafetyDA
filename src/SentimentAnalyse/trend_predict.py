@@ -3,7 +3,8 @@ import numpy as np
 from sklearn.externals import joblib
 import matplotlib.pylab as plt
 from state_transition import get_all_state_transition
-from sentiment_fever import calculate_fever_by_topic
+# from sentiment_fever import calculate_fever_by_topic
+from sentiment_fever_day import calculate_fever_by_topic
 
 result_dir = 'result'
 if not os.path.exists(result_dir):
@@ -22,7 +23,8 @@ def trend_predict(total_list):
     matrix_list, init_state_list = get_all_state_transition(total_list)
     states_list = []
     for i in range(len(matrix_list)):
-        states = predict_state(matrix_list[i], init_state_list[i])
+        n = len(total_list[i])-1
+        states = predict_state(matrix_list[i], init_state_list[i], n)
         states_list.append(states)
     joblib.dump(states_list, state_file)
 
@@ -40,7 +42,7 @@ def analyse_result(state_file):
 
 
 # internal functions
-def predict_state(matrix, init_state):
+def predict_state(matrix, init_state, n):
     """根据状态转移概率矩阵和初始状态求出每个月的状态向量
 
     Args:
@@ -50,11 +52,12 @@ def predict_state(matrix, init_state):
     Returns:
         states: 状态向量列表
     """
-    n = 12
     states = []
+    # state = init_state
+    init_state = np.array([0, 0, 1, 0])
     for i in range(1, n):
-        matrix_power = np.power(matrix, i)
-        state = np.matmul(init_state, matrix_power)
+        # matrix_power = np.power(matrix, i)
+        state = np.matmul(state, matrix)
         states.append(state)
     return states
 
@@ -133,7 +136,12 @@ def get_state_slope(state_index):
 
 
 if __name__ == '__main__':
-    topic_list = calculate_fever_by_topic(topic_id=21)
+    # year
+    # topic_list = calculate_fever_by_topic(topic_id=21)
+    #topic_list = calculate_fever_by_topic(topic_id=21, month=8)
+    topic_list = [46.52, 97.56, 139.52, 128.84, 156.78, 108.92, 81.08, 49.02, 45.4, 50.81, 71.8, 36.52, 38.08, 44.68,
+                  51.6, 61.56, 36, 51.8]
+    # month
     total_list = [topic_list]
     trend_predict(total_list)
     state_file = os.path.join(result_dir, 'states')
