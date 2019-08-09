@@ -21,7 +21,7 @@ def get_news_number_by_topic(topic_id, month):
     df['pub_date'] = pd.to_datetime(df['pub_date'])
     # 得到某月数据
     df = df.set_index('pub_date')
-    for day in range(1, days[month-1]):
+    for day in range(1, days[month-1] + 1):
         date_str = '2018-' + str(month) + '-' + str(day)
         topic_news_number.append(df[date_str].shape[0])
 
@@ -44,7 +44,7 @@ def get_forum_info_by_topic(topic_id, month):
     df = pd.read_csv(file_path)
     df['pub_date'] = pd.to_datetime(df['pub_date'])
     df = df.set_index('pub_date')
-    for day in range(1, days[month-1]):
+    for day in range(1, days[month-1] + 1):
         date_str = '2018-' + str(month) + '-' + str(day)
         # 得到某月数据
         df_month = df[date_str]
@@ -64,7 +64,7 @@ def get_weibo_info_by_topic(topic_id, month):
     df = pd.read_csv(file_path)
     df['pub_date'] = pd.to_datetime(df['pub_date'])
     df = df.set_index('pub_date')
-    for day in range(1, days[month - 1]):
+    for day in range(1, days[month - 1] + 1):
         date_str = '2018-' + str(month) + '-' + str(day)
         # 得到某月数据
         df_month = df[date_str]
@@ -112,7 +112,7 @@ def calculate_fever_by_topic(topic_id, month, readfile='format_data/sentiment_to
 
 def draw_fever_trend(topic_id, month):
     fever_list = calculate_fever_by_topic(topic_id, month)
-    x = [i for i in range(1, days[month-1])]
+    x = [i for i in range(1, days[month-1] + 1)]
     # 绘制折线图，设置线宽
     plt.plot(x, fever_list, linewidth=2)
 
