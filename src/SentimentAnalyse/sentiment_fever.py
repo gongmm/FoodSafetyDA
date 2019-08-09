@@ -147,7 +147,7 @@ def calculate_fever_by_topic(topic_id, readfile='format_data/sentiment_topic_ana
 def format_data():
     files = os.listdir(origin_path)
     # 进行转码
-    for file in files[1:]:
+    for file in files:
         file_path = os.path.join(origin_path, file)
         result_path = os.path.join(format_path, file)
         gbk_2_utf(file_path)
