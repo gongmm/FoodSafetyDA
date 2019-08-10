@@ -201,8 +201,8 @@ def getContent(file_name):
 
     # 在运行过程中微博数==0的情况，可能是微博反爬机制，需要输入验证码
     if len(nodes) == 0:
-        driver.refresh()
-        # input("请在微博页面输入验证码！")
+        # driver.refresh()
+        input("请在微博页面输入验证码！")
         url = driver.current_url
         driver.get(url)
         getContent(file_name)
