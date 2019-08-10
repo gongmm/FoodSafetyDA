@@ -21,7 +21,7 @@ def get_news_number_by_topic(topic_id, month):
     df['pub_date'] = pd.to_datetime(df['pub_date'])
     # 得到某月数据
     df = df.set_index('pub_date')
-    for day in range(1, days[month-1] + 1):
+    for day in range(1, days[month - 1] + 1):
         date_str = '2018-' + str(month) + '-' + str(day)
         topic_news_number.append(df[date_str].shape[0])
 
@@ -44,7 +44,7 @@ def get_forum_info_by_topic(topic_id, month):
     df = pd.read_csv(file_path)
     df['pub_date'] = pd.to_datetime(df['pub_date'])
     df = df.set_index('pub_date')
-    for day in range(1, days[month-1] + 1):
+    for day in range(1, days[month - 1] + 1):
         date_str = '2018-' + str(month) + '-' + str(day)
         # 得到某月数据
         df_month = df[date_str]
@@ -96,7 +96,8 @@ def calculate_fever_by_topic(topic_id, month, readfile='format_data/sentiment_to
 
     news_number = get_news_number_by_topic(topic_id, month)
     forum_post_number, forum_reply_number, forum_read_number = get_forum_info_by_topic(topic_id, month)
-    weibo_post_number, weibo_comment_number, weibo_like_number, weibo_repost_number = get_weibo_info_by_topic(topic_id, month)
+    weibo_post_number, weibo_comment_number, weibo_like_number, weibo_repost_number = get_weibo_info_by_topic(topic_id,
+                                                                                                              month)
 
     result_news = calculate_core(news_number, w1)
     result_forum = calculate_core(forum_post_number, post_w) + calculate_core(forum_read_number, read_w) \
@@ -107,12 +108,13 @@ def calculate_fever_by_topic(topic_id, month, readfile='format_data/sentiment_to
                                                                                       weibo_repost_w)
 
     result = (result_news + result_forum + result_weibo).tolist()
+    result = standardization(result)
     return result
 
 
 def draw_fever_trend(topic_id, month):
     fever_list = calculate_fever_by_topic(topic_id, month)
-    x = [i for i in range(1, days[month-1] + 1)]
+    x = [i for i in range(1, days[month - 1] + 1)]
     # 绘制折线图，设置线宽
     plt.plot(x, fever_list, linewidth=2)
 
@@ -127,6 +129,14 @@ def draw_fever_trend(topic_id, month):
     plt.show()
 
 
+def standardization(fever_list):
+    max_value = max(fever_list)
+    min_value = min(fever_list)
+    for index in range(len(fever_list)):
+        fever_list[index] = (fever_list[index] - min_value) / (max_value - min_value)
+    return fever_list
+
+
 if __name__ == '__main__':
     # format_data()
     # gbk_2_utf('format_data/forum_topic21.csv', 'format_data/forum_topic21_format.csv')
@@ -134,6 +144,6 @@ if __name__ == '__main__':
     topic_num = 21
     month = 8
 
-    # calculate_fever_by_topic(topic_id=21)
+    calculate_fever_by_topic(topic_id=21, month=month)
     draw_fever_trend(topic_id=21, month=month)
     # calculate()

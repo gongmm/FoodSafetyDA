@@ -141,6 +141,7 @@ def calculate_fever_by_topic(topic_id, readfile='format_data/sentiment_topic_ana
                    + calculate_core(weibo_like_number, weibo_like_w) + calculate_core(weibo_repost_number, weibo_repost_w)
 
     result = (result_news + result_forum + result_weibo).tolist()
+    result = standardization(result)
     return result
 
 
@@ -169,6 +170,14 @@ def draw_fever_trend(topic_id):
     plt.tick_params(axis='both', labelsize=14)
 
     plt.show()
+
+
+def standardization(fever_list):
+    max_value = max(fever_list)
+    min_value = min(fever_list)
+    for index in range(len(fever_list)):
+        fever_list[index] = (fever_list[index] - min_value) / (max_value - min_value)
+    return fever_list
 
 
 if __name__ == '__main__':
