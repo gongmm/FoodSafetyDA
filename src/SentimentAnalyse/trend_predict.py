@@ -54,7 +54,7 @@ def predict_state(matrix, init_state, n):
     """
     states = []
     # state = init_state
-    init_state = np.array([0, 0, 1, 0])
+    state = np.array([0, 1, 0, 0])
     for i in range(1, n):
         # matrix_power = np.power(matrix, i)
         state = np.matmul(state, matrix)
@@ -138,9 +138,9 @@ def get_state_slope(state_index):
 if __name__ == '__main__':
     # year
     # topic_list = calculate_fever_by_topic(topic_id=21)
-    #topic_list = calculate_fever_by_topic(topic_id=21, month=8)
-    topic_list = [46.52, 97.56, 139.52, 128.84, 156.78, 108.92, 81.08, 49.02, 45.4, 50.81, 71.8, 36.52, 38.08, 44.68,
-                  51.6, 61.56, 36, 51.8]
+    topic_list = calculate_fever_by_topic(topic_id=21, month=8)
+    #topic_list = [46.52, 97.56, 139.52, 128.84, 156.78, 108.92, 81.08, 49.02, 45.4, 50.81, 71.8, 36.52, 38.08, 44.68,
+     #             51.6, 61.56, 36, 51.8]
     # month
     total_list = [topic_list]
     trend_predict(total_list)
