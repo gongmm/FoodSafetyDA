@@ -307,7 +307,7 @@ def getContent(file_name):
 def get_keywords(start, end):
     id_list = []
     word_list = []
-    with open('keywords.txt', 'r') as f:
+    with open('keywords.txt', 'r', encoding='GBK') as f:
         for info in f.readlines():
             topic_id = info.split(',')[0]
             topic_word = info.split(',')[-1].strip()
