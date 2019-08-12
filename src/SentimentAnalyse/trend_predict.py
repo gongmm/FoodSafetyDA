@@ -53,8 +53,8 @@ def predict_state(matrix, init_state, n):
         states: 状态向量列表
     """
     states = []
-    # state = init_state
-    state = np.array([0, 1, 0, 0])
+    state = init_state
+    # state = np.array([0, 1, 0, 0])
     for i in range(1, n):
         # matrix_power = np.power(matrix, i)
         state = np.matmul(state, matrix)
@@ -90,7 +90,7 @@ def plot_states(state_indice, file):
     """
     trend_values = get_trend_value(state_indice)
     n = len(state_indice)
-    x = [i for i in range(1, n+1)]
+    x = [i for i in range(1, n+2)]
     plt.plot(x, trend_values)
     plt.xlabel('Month')
     plt.ylabel('trend value')
@@ -138,7 +138,7 @@ def get_state_slope(state_index):
 if __name__ == '__main__':
     # year
     # topic_list = calculate_fever_by_topic(topic_id=21)
-    topic_list = calculate_fever_by_topic(topic_id=21, month=8)
+    topic_list = calculate_fever_by_topic(topic_id=21, month=2)[:20]
     #topic_list = [46.52, 97.56, 139.52, 128.84, 156.78, 108.92, 81.08, 49.02, 45.4, 50.81, 71.8, 36.52, 38.08, 44.68,
      #             51.6, 61.56, 36, 51.8]
     # month
