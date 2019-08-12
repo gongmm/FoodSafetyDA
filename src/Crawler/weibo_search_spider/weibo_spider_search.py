@@ -329,7 +329,7 @@ if __name__ == '__main__':
     # id_list, word_list = get_keywords(0, 8)
     # id_list, word_list = get_keywords(9, 17)
     # id_list, word_list = get_keywords(18, 26)
-    id_list, word_list = get_keywords(27, 35)
+    id_list, word_list = get_keywords(32, 35)
 
     for index in range(len(word_list)):
         # 搜索热点微博 爬取评论
