@@ -5,7 +5,10 @@ import pandas as pd
 # 原始数据
 from sentiment_fever import calculate_fever_by_topic
 
-data = calculate_fever_by_topic(topic_id=21)[:7]
+input_number = 5
+real_fever = calculate_fever_by_topic(topic_id=21)
+
+data = real_fever[:input_number]
 
 n = len(data)
 x0 = np.array(data)
@@ -89,12 +92,17 @@ if C < 0.35 and P > 0.6:
 
 if can_predict is True:
     print('可以采用灰度预测模型，模型预测准确度等级为：', level)
-    m = int(input('请输入需要预测的年数:'))
-    print('往后%d年预测值依次为：' % m)
+    m = int(input('请输入需要预测的月数:'))
+    print('往后%d月预测值依次为：' % m)
     predict = np.zeros(m)
     for i in range(m):
         predict[i] = (x0[0] - b / a) * (1 - math.exp(a)) * math.exp(-a * (i + n))
     print(predict)
+    print('往后%d月真实值依次为：' % m)
+    real = np.zeros(m)
+    for i in range(m):
+        real[i] = real_fever[input_number+i]
+    print(real)
 else:
     if C > 0.35:
         print('后验差比值>0.35')

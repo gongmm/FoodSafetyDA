@@ -51,22 +51,23 @@ class GPRY(pyGPs.GPR):
 class DataPredict():
 
     def __init__(self):
-        self.date, self.hot = self.getDate(month=8)
+        self.date, self.hot = self.get_date_fever(month=8)
 
-    def getDate(self, month):
-        hot = calculate_fever_by_topic(topic_id=21, month=month)[:10]
-        date = [i for i in range(1, 11)]
+    def get_date_fever(self, month):
+        hot = calculate_fever_by_topic(topic_id=21, month=month)
+        days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        date = [i for i in range(1, days[month-1] + 1)]
 
         return date, hot
 
-    def predict(self, predict_day_num=5):
-        # def predict(self):
+    def predict(self, predict_day_num=1, use_day_num=30):
         print('__date__:', self.date)
         print('__hot__:', self.hot)
 
-        p_y = self.hot[-1]
-        p_x = self.date[-1]
-        del self.hot[-1]
+        p_y = self.hot[use_day_num:][:predict_day_num]
+        p_x = self.date[use_day_num:][:predict_day_num]
+        self.hot = self.hot[:use_day_num]
+        self.date = self.date[:use_day_num]
 
         day_min = min(self.date)
         # 预测后面五天的数据
@@ -77,9 +78,9 @@ class DataPredict():
             test_data.append([day_min])
             day_min = day_min + 1
 
-        train_data = []
-        for i in range(0, len(self.date) - 1):
-            train_data.append([self.date[i]])
+        train_data = self.date
+        # for i in range(0, len(self.date) - 1):
+        #     train_data.append([self.date[i]])
 
         train_data = np.array(train_data)
         self.hot = np.array(self.hot)
