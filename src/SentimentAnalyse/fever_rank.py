@@ -48,8 +48,8 @@ def topic_fever_rank(month, topic_num=45):
             keyword = get_keywords(topic)
             topic_fever_dict[keyword] = fever
     z = zip(topic_fever_dict.values(), topic_fever_dict.keys())
-    # result = sorted(z, reverse=True)
-    result = sorted(z)
+    result = sorted(z, reverse=True)
+    # result = sorted(z)
     title = [t[-1] for t in result]
     value = [t[0] for t in result]
     joblib.dump(title, os.path.join(model_dir, 'title.list'))
