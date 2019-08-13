@@ -18,8 +18,8 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 option = webdriver.ChromeOptions()
-option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
-# option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 4")
+# option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 3")
+option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 4")
 driver = webdriver.Chrome(chrome_options=option)
 # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='gb18030')  # 改变标准输出的默认编码
 
@@ -94,9 +94,9 @@ def GetSearchContent(key, topic_id):
     global page
 
     # 需要抓取的开始和结束日期
-    start_date = datetime.datetime(2018, 8, 1, 0)
+    start_date = datetime.datetime(2018, 8, 21, 0)
     end_date = datetime.datetime(2018, 9, 1, 0)
-    delta_date = datetime.timedelta(hours=6)
+    delta_date = datetime.timedelta(hours=2)
 
     # 每次抓取一天的数据
     start_stamp = start_date
@@ -139,7 +139,10 @@ def handlePage(file_name):
             if checkNext():
                 # 拿到下一页按钮
                 next_page_btn = driver.find_element_by_xpath("//a[@class='next']")
-                next_page_btn.click()
+                try:
+                    next_page_btn.click()
+                except:
+                    input("请手动点击下一页")
                 # time.sleep(5)
             else:
                 print("no Next")
@@ -326,10 +329,10 @@ if __name__ == '__main__':
     # 操作函数
     LoginWeibo(username, password)  # 登陆微博
 
-    # id_list, word_list = get_keywords(0, 8)
+    id_list, word_list = get_keywords(7, 7)
     # id_list, word_list = get_keywords(9, 17)
     # id_list, word_list = get_keywords(18, 26)
-    id_list, word_list = get_keywords(27, 35)
+    # id_list, word_list = get_keywords(27, 35)
 
     for index in range(len(word_list)):
         # 搜索热点微博 爬取评论
