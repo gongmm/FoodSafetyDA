@@ -3,6 +3,7 @@ import numpy as np
 STATE_NUM = 4
 
 
+# main functions
 def get_all_state_transition(total_list):
     """根据所有主题/事件的热度值计算状态转移概率矩阵和初始状态
 
@@ -24,6 +25,7 @@ def get_all_state_transition(total_list):
     return matrix_list, init_state_list
 
 
+# internal functions
 def state_transit(hot_list):
     """计算一个事件/主题的状态转移，得到状态转移概率矩阵
 
@@ -36,7 +38,7 @@ def state_transit(hot_list):
     """
     # 计算热度趋势值
     trend_list = []
-    for i in range(len(hot_list-1)):
+    for i in range(len(hot_list)-1):
         t = hot_list[i+1] - hot_list[i]
         trend_list.append(t)
 
@@ -96,15 +98,15 @@ def get_state(trend, interval):
         trend: 热度趋势值
         interval: 元组，状态区间 (t_min, t_half_min, 0, t_half_max, t_max)
 
-    Returns: 整数，状态区间的标号，用于后续状态转移表的下标索引
+    Returns: 整数，状态区间的标号-1，用于后续状态转移表的下标索引
     """
-    if interval[0] <= trend < trend[1]:
-        return 4
-    if interval[1] <= trend < trend[2]:
-        return 3
-    if interval[2] <= trend < trend[3]:
-        return 2
-    return 1  # interval[3] <= trend < trend[4]
+    if interval[0] <= trend < interval[1]:
+        return 4-1
+    if interval[1] <= trend < interval[2]:
+        return 3-1
+    if interval[2] <= trend < interval[3]:
+        return 2-1
+    return 1-1  # interval[3] <= trend < trend[4]
 
 
 def get_state_interval(trend_list):
@@ -135,7 +137,7 @@ def get_transit_prob_matrix(table):
     首先求当前状态为S_i的总和，即一行的所有列相加，sum_j(n_ij)。
     然后用频率代表概率，p_ij = n_ij/sum_j(n_ij)。
 
-    col_sum为1xN矩阵, col_sum.T是col_sum的转置矩阵，为Nx1的矩阵。
+    col_sum为1xN矩阵, 将其转置为Nx1的矩阵。
 
     Args:
         table: 构造状态转移表
@@ -144,5 +146,14 @@ def get_transit_prob_matrix(table):
         matrix: 状态转移概率矩阵
     """
     col_sum = table.sum(axis=1)  # 计算每行的总和(一行的所有列相加)， col_sum为1xN矩阵
-    matrix = np.divide(table, col_sum.T)  # 利用np广播的特性，每行除以同一个数
+
+    # 避免除数为0，将sum为0的设置为1，0/1还是0，不影响最后运算结果
+    for i in range(len(col_sum)):
+        if col_sum[i] == 0:
+            col_sum[i] = 1
+
+    # col_sum为1xN矩阵, 将其转置为Nx1的矩阵
+    col_sum.shape = (STATE_NUM, 1)
+
+    matrix = np.divide(table, col_sum)  # 利用np广播的特性，每行除以同一个数
     return matrix

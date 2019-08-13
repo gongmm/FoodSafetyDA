@@ -12,8 +12,8 @@ import math
 from selenium import webdriver
 
 option = webdriver.ChromeOptions()
-option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 2")
-# option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 2")
+# option.add_argument(r"user-data-dir=C:\Users\Administrator\AppData\Local\Google\Chrome\User Data 2")
+option.add_argument(r"user-data-dir=C:\Users\gnaiz\AppData\Local\Google\Chrome\User Data 2")
 browser = webdriver.Chrome(chrome_options=option)
 
 BaseUrl = "http://data.people.com.cn/sc/ss?qs="  # need to be change
