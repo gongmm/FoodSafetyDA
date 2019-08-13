@@ -77,37 +77,54 @@ def get_forum_info_by_topic(topic_id):
     topic_read_number = []
     topic_reply_number = []
     # 读写csv文件
-    df = pd.read_csv(file_path)
-    df['pub_date'] = pd.to_datetime(df['pub_date'])
-    df = df.set_index('pub_date')
-    for month in range(1, 13):
-        date_str = '2018-' + str(month)
-        # 得到某月数据
-        df_month = df[date_str]
-        topic_post_number.append(df_month.shape[0])
-        topic_reply_number.append(df_month['reply_num'].sum())
-        topic_read_number.append(df_month['read_num'].sum())
+    try:
+        df = pd.read_csv(file_path)
+    except:
+        print("论坛信息中不存在topic_" + str(topic_id))
+        topic_post_number = [0] * 12
+        topic_reply_number = [0] * 12
+        topic_read_number = [0] * 12
+    else:
+        df['pub_date'] = pd.to_datetime(df['pub_date'])
+        df = df.set_index('pub_date')
+        for month in range(1, 13):
+            date_str = '2018-' + str(month)
+            # 得到某月数据
+            df_month = df[date_str]
+            topic_post_number.append(df_month.shape[0])
+            topic_reply_number.append(df_month['reply_num'].sum())
+            topic_read_number.append(df_month['read_num'].sum())
     return topic_post_number, topic_reply_number, topic_read_number
 
 
 def get_weibo_info_by_topic(topic_id):
     file_path = os.path.join(format_path, "weibo_topic" + str(topic_id) + ".csv")
+
     topic_post_number = []
     topic_comment_number = []
     topic_like_number = []
     topic_repost_number = []
-    # 读写csv文件
-    df = pd.read_csv(file_path)
-    df['pub_date'] = pd.to_datetime(df['pub_date'])
-    df = df.set_index('pub_date')
-    for month in range(1, 13):
-        date_str = '2018-' + str(month)
-        # 得到某月数据
-        df_month = df[date_str]
-        topic_post_number.append(df_month.shape[0])
-        topic_comment_number.append(df_month['comment'].sum())
-        topic_like_number.append(df_month['like'].sum())
-        topic_repost_number.append(df_month['repost'].sum())
+
+    try:
+        # 读写csv文件
+        df = pd.read_csv(file_path)
+    except:
+        print("微博信息中不存在topic_" + str(topic_id))
+        topic_post_number = [0] * 12
+        topic_comment_number = [0] * 12
+        topic_like_number = [0] * 12
+        topic_repost_number = [0] * 12
+    else:
+        df['pub_date'] = pd.to_datetime(df['pub_date'])
+        df = df.set_index('pub_date')
+        for month in range(1, 13):
+            date_str = '2018-' + str(month)
+            # 得到某月数据
+            df_month = df[date_str]
+            topic_post_number.append(df_month.shape[0])
+            topic_comment_number.append(df_month['comment'].sum())
+            topic_like_number.append(df_month['like'].sum())
+            topic_repost_number.append(df_month['repost'].sum())
     return topic_post_number, topic_comment_number, topic_like_number, topic_repost_number
 
 
@@ -117,7 +134,7 @@ def calculate_core(number_list, w):
     return array
 
 
-def calculate_fever_by_topic(topic_id, readfile='format_data/sentiment_topic_analysis_info.csv'):
+def calculate_fever_by_topic(topic_id, standardize=True, readfile='format_data/sentiment_topic_analysis_info.csv'):
     w1 = 0.5
     w2 = 0.3
     w3 = 0.2
@@ -141,7 +158,8 @@ def calculate_fever_by_topic(topic_id, readfile='format_data/sentiment_topic_ana
                    + calculate_core(weibo_like_number, weibo_like_w) + calculate_core(weibo_repost_number, weibo_repost_w)
 
     result = (result_news + result_forum + result_weibo).tolist()
-    result = standardization(result)
+    if standardize:
+        result = standardization(result)
     return result
 
 
