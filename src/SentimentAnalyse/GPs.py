@@ -26,6 +26,7 @@ class GPRY(pyGPs.GPR):
         x = self.x
         y = self.y
         ym = self.ym  # predictive test mean
+        lp = self.lp
         pre_x = []
         pre_y = []
         index = x[-1][0] + 1
@@ -37,6 +38,7 @@ class GPRY(pyGPs.GPR):
                 index = index + 1
 
         print(str(pre_y))
+        print(lp)
 
         x = list(x.T[0])
 
@@ -48,7 +50,7 @@ class GPRY(pyGPs.GPR):
         plt.show()
 
 
-class DataPredict():
+class DataPredict:
 
     def __init__(self):
         self.date, self.hot = self.get_date_fever(month=8)
