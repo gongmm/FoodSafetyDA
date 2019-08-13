@@ -40,9 +40,12 @@ def reformat_date(readfile, writefile):
     df = pd.read_csv(readfile)
     for i in range(df['pub_date'].shape[0]):
         # for row in df['pub_date']:
-        df.loc[i, 'pub_date'] = df.loc[i, 'pub_date'].replace('年', '/')
-        df.loc[i, 'pub_date'] = df.loc[i, 'pub_date'].replace('月', '/')
-        df.loc[i, 'pub_date'] = df.loc[i, 'pub_date'].replace('日', '')
+        try:
+            df.loc[i, 'pub_date'] = df.loc[i, 'pub_date'].replace('年', '/')
+            df.loc[i, 'pub_date'] = df.loc[i, 'pub_date'].replace('月', '/')
+            df.loc[i, 'pub_date'] = df.loc[i, 'pub_date'].replace('日', '')
+        except:
+            print(i)
     df['pub_date'] = pd.to_datetime(df['pub_date'])  # 将数据类型转换为日期类型
     df.to_csv(writefile)
 
@@ -88,12 +91,19 @@ def get_forum_info_by_topic(topic_id):
         df['pub_date'] = pd.to_datetime(df['pub_date'])
         df = df.set_index('pub_date')
         for month in range(1, 13):
-            date_str = '2018-' + str(month)
+            if month >= 10:
+                date_str = '2018-' + str(month)
+            else:
+                date_str = '2018-0' + str(month)
             # 得到某月数据
-            df_month = df[date_str]
-            topic_post_number.append(df_month.shape[0])
-            topic_reply_number.append(df_month['reply_num'].sum())
-            topic_read_number.append(df_month['read_num'].sum())
+            try:
+                df_month = df[date_str]
+            except:
+                print(file_path)
+            else:
+                topic_post_number.append(df_month.shape[0])
+                topic_reply_number.append(df_month['reply_num'].sum())
+                topic_read_number.append(df_month['read_num'].sum())
     return topic_post_number, topic_reply_number, topic_read_number
 
 
@@ -118,7 +128,10 @@ def get_weibo_info_by_topic(topic_id):
         df['pub_date'] = pd.to_datetime(df['pub_date'])
         df = df.set_index('pub_date')
         for month in range(1, 13):
-            date_str = '2018-' + str(month)
+            if month >= 10:
+                date_str = '2018-' + str(month)
+            else:
+                date_str = '2018-0' + str(month)
             # 得到某月数据
             df_month = df[date_str]
             topic_post_number.append(df_month.shape[0])
@@ -160,7 +173,14 @@ def calculate_fever_by_topic(topic_id, standardize=True, readfile='format_data/s
     result = (result_news + result_forum + result_weibo).tolist()
     if standardize:
         result = standardization(result)
+    result = round_result(result)
     return result
+
+
+def round_result(result_list):
+    for index in range(len(result_list)):
+        result_list[index] = round(result_list[index])
+    return result_list
 
 
 def format_data():
@@ -199,10 +219,10 @@ def standardization(fever_list):
 
 
 if __name__ == '__main__':
-    # format_data()
+    format_data()
     # gbk_2_utf('format_data/forum_topic21.csv', 'format_data/forum_topic21_format.csv')
     # reformat_date("format_data/all_news_data_utf_topic.csv", "format_data/all_news_data_utf_topic.csv")
     topic_num = 21
     # calculate_fever_by_topic(topic_id=21)
-    draw_fever_trend(topic_id=21)
+    # draw_fever_trend(topic_id=21)
     # calculate()
