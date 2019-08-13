@@ -3,11 +3,15 @@ import numpy as np
 from sklearn.externals import joblib
 import matplotlib.pylab as plt
 from state_transition import get_all_state_transition
+# from sentiment_fever import calculate_fever_by_topic
+from sentiment_fever_day import calculate_fever_by_topic
 
 result_dir = 'result'
 if not os.path.exists(result_dir):
     os.makedirs(result_dir)
 
+
+# main functions
 def trend_predict(total_list):
     """根据所有主题/事件的热度值进行趋势预测并将预测的状态存入文件中
 
@@ -19,28 +23,10 @@ def trend_predict(total_list):
     matrix_list, init_state_list = get_all_state_transition(total_list)
     states_list = []
     for i in range(len(matrix_list)):
-        states = predict_state(matrix_list[i], init_state_list[i])
+        n = len(total_list[i])-1
+        states = predict_state(matrix_list[i], init_state_list[i], n)
         states_list.append(states)
     joblib.dump(states_list, state_file)
-
-
-def predict_state(matrix, init_state):
-    """根据状态转移概率矩阵和初始状态求出每个月的状态向量
-
-    Args:
-        matrix: 状态转移概率矩阵
-        init_state: 初始状态
-
-    Returns:
-        states: 状态向量列表
-    """
-    n = 12
-    states = []
-    for i in range(1, n):
-        matrix_power = np.power(matrix, i)
-        state = np.matmul(init_state, matrix_power)
-        states.append(state)
-    return states
 
 
 def analyse_result(state_file):
@@ -53,6 +39,27 @@ def analyse_result(state_file):
         state_indice = get_state_index(states_vec_list[i])
         file = os.path.join(result_dir, 'topic' + str(i) + '_trend.png')
         plot_states(state_indice, file)
+
+
+# internal functions
+def predict_state(matrix, init_state, n):
+    """根据状态转移概率矩阵和初始状态求出每个月的状态向量
+
+    Args:
+        matrix: 状态转移概率矩阵
+        init_state: 初始状态
+
+    Returns:
+        states: 状态向量列表
+    """
+    states = []
+    state = init_state
+    # state = np.array([0, 1, 0, 0])
+    for i in range(1, n):
+        # matrix_power = np.power(matrix, i)
+        state = np.matmul(state, matrix)
+        states.append(state)
+    return states
 
 
 def get_state_index(states_vec):
@@ -82,11 +89,13 @@ def plot_states(state_indice, file):
         file: 画图存放的文件路径
     """
     trend_values = get_trend_value(state_indice)
-    plt.plot(trend_values)
+    n = len(state_indice)
+    x = [i for i in range(1, n+2)]
+    plt.plot(x, trend_values)
     plt.xlabel('Month')
     plt.ylabel('trend value')
     plt.title('trend analysis for topic')
-    plt.xticks([i for i in range(1, 13)])
+    plt.xticks([i for i in range(1, n+1)])
     plt.yticks([2*i for i in range(5)])
     plt.savefig(file)
 
@@ -127,5 +136,13 @@ def get_state_slope(state_index):
 
 
 if __name__ == '__main__':
-    file = os.path.join(result_dir, 'topic_trend.png')
-    plot_states([2, 2, 3, 3, 2, 2, 1, 2, 4, 3, 2, 1], file)
+    # year
+    # topic_list = calculate_fever_by_topic(topic_id=21)
+    topic_list = calculate_fever_by_topic(topic_id=21, month=2)[:20]
+    #topic_list = [46.52, 97.56, 139.52, 128.84, 156.78, 108.92, 81.08, 49.02, 45.4, 50.81, 71.8, 36.52, 38.08, 44.68,
+     #             51.6, 61.56, 36, 51.8]
+    # month
+    total_list = [topic_list]
+    trend_predict(total_list)
+    state_file = os.path.join(result_dir, 'states')
+    analyse_result(state_file)
