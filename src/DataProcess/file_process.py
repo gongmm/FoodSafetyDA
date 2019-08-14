@@ -45,8 +45,7 @@ class FileProcess:
     @staticmethod
     def csv_to_single_txt_regular(readfile, writefile):
         """
-            读取csv保存为单独的txt文件
-            将csv中的每一行保存为txt/*/nlp_content_text_i.txt文件
+            读取csv保存为一个txt文件
         """
         if not os.path.exists(writefile):
             os.makedirs(writefile)
@@ -66,31 +65,74 @@ class FileProcess:
                     txt_file.close()
         csv_file.close()
 
-    # 遍历指定目录，显示目录下的所有文件名
     @staticmethod
     def display_file(filepath):
+        """
+        遍历指定目录，显示目录下的所有文件名
+        Args:
+            filepath: 文件路径
+
+        Returns:
+
+        """
         path_dir = os.listdir(filepath)
         for all_dir in path_dir:
             child = os.path.join('%s%s' % (filepath, all_dir))
             print(child.decode('gbk'))  # .decode('gbk')是解决中文显示乱码问题
 
-    # 读取文件内容并打印
     @staticmethod
     def read_file(filename):
+        """
+        读取文件内容并打印
+        Args:
+            filename: 文件路径
+
+        Returns:
+
+        """
         file = open(filename, 'r', encoding='utf-8')  # r 代表read
         res = file.read()
         file.close()
         return res
 
-    '''读取文件目录下所有文件组合成语料并且将所有txt文档集合在一个文档中
-    #1.进行分词
-    #2.进行停用词的处理
-    3.返回语料
-    4.并将处理的txt文档集合在一个文档中
-    '''
+    @staticmethod
+    def html_to_text(readfile, writefile):
+        """
+        去掉文本中的html标签
+        Args:
+            readfile:
+            writefile:
+
+        Returns:
+
+        """
+        with open(readfile, 'r', encoding='gbk') as f:
+            with open(writefile, 'w', encoding='utf-8', newline='') as f1:
+                rows = csv.reader(f)
+                writer = csv.writer(f1)
+                for row in rows:
+                    content_without_tag = re.sub(r'<.*?>', '', row[-1])
+                    content_without_tag = content_without_tag.replace('\\n', '').strip()
+                    row[-1] = content_without_tag.split(':', maxsplit=1)[-1]
+                    print(row)
+                    writer.writerow(row)
 
     @staticmethod
     def make_corpus_from_dir(root, write_path):
+        """
+        读取文件目录下所有文件组合成语料并且将所有txt文档集合在一个文档中
+        1.进行分词
+        2.进行停用词的处理
+        3.返回语料
+        4.并将处理的txt文档集合在一个文档中
+    '''
+        Args:
+            root:
+            write_path:
+
+        Returns:
+
+        """
         writefile = open(write_path, 'w', encoding='utf-8')
         corpus = []
         path_dir = os.listdir(root)
@@ -130,19 +172,6 @@ class FileProcess:
         writefile.close()
         return corpus
 
-    '''添加新列'''
-
-    @staticmethod
-    def add_cols(readfile, writefile, content):
-        with open(readfile, 'r', encoding='utf-8') as f:
-            rows = csv.reader(f)
-            with open(writefile, 'w', encoding='utf-8', newline='') as f1:
-                writer = csv.writer(f1)
-                for row in rows:
-                    print(row)
-                    # row = [row1.encode("utf-8") for row1 in row]
-                    row.append(content)
-                    writer.writerow(row)
 
 
 if __name__ == '__main__':
@@ -151,6 +180,7 @@ if __name__ == '__main__':
     # FileProcess.csv_to_single_txt('all_news_data_utf.csv', 'data/origin')
     # FileProcess.csv_to_txt_regular('all_news_data_utf.csv', 'data/regular/')
     FileProcess.csv_to_single_txt_regular('all_news_data_utf.csv', 'data/regular_total/')
+    FileProcess.html_to_text('wechat.csv', 'wechat_new.csv')
     # corpus_result = FileProcess.make_corpus_from_dir('data/', 'corpus/news_content_corpus.txt')
     # print(len(corpus_result))
     # corpus_file = open('corpus/news_content_corpus.txt', 'r', encoding="utf-8")

@@ -21,6 +21,14 @@ def get_corpus(filepath):
 
 
 def topic_analyze(corpus):
+    """
+    确定主题数
+    Args:
+        corpus:
+
+    Returns:
+
+    """
     train_size = int(round(len(corpus) * 0.8))  # 分解训练集和测试集
     train_index = sorted(random.sample(range(len(corpus)), train_size))  # 随机选取train_size个下标
     test_index = sorted(set(range(len(corpus))) - set(train_index))
