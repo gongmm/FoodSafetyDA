@@ -1,10 +1,3 @@
-'''
-原作者：艾小张 
-来源：CSDN 
-原文：https://blog.csdn.net/sinat_26549677/article/details/84548471 
-改编：yiner
-'''
-
 import re
 import os,shutil
 import requests,threading

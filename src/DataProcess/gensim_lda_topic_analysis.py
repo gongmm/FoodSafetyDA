@@ -33,6 +33,11 @@ def get_corpus():
 
 
 def gensim_lda_train():
+    """
+    模型训练
+    Returns:
+
+    """
     print("Loading dataset...")
     t0 = time()
     dictionary, common_corpus = get_corpus()
@@ -53,6 +58,11 @@ def gensim_lda_train():
 
 
 def print_info():
+    """
+    获得文档主题
+    Returns:
+
+    """
     dictionary, common_corpus = get_corpus()
     lda = joblib.load(lda_model_file)
     doc_topic = lda.get_document_topics(common_corpus)

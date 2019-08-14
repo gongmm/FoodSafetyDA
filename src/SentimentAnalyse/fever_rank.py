@@ -5,7 +5,7 @@ from pyecharts import options as opts
 import pyecharts.globals
 from sklearn.externals import joblib
 
-from sentiment_fever import calculate_fever_by_topic
+from sentiment_fever import calculate_fever_by_topic, calculate_three_part_by_topic
 
 chart_dir = 'chart'
 model_dir = 'result'
@@ -57,6 +57,45 @@ def topic_fever_rank(month, topic_num=45):
     return title, value
 
 
+def topic_fever_rank_three_component(month, topic_num=45):
+    topic_fever_dict = {}
+    id_list = get_id_list()
+    fever_values = []
+    news_values = []
+    forum_values = []
+    weibo_values = []
+    keywords = []
+    for topic in range(topic_num):
+        if str(topic) in id_list:
+            fever_list = calculate_fever_by_topic(topic_id=topic, standardize=False)
+            result_news, result_forum, result_weibo = calculate_three_part_by_topic(topic_id=topic)
+            fever = fever_list[month - 1]
+            news_value = result_news[month - 1]
+            forum_value = result_forum[month - 1]
+            weibo_value = result_weibo[month - 1]
+            keyword = get_keywords(topic)
+            topic_fever_dict[keyword] = fever
+            fever_values.append(fever)
+            news_values.append(news_value)
+            forum_values.append(forum_value)
+            weibo_values.append(weibo_value)
+            keywords.append(keyword)
+    z = zip(fever_values, news_values, forum_values, weibo_values, keywords)
+    result = sorted(z, reverse=True)
+    # result = sorted(z)
+    title = [t[-1] for t in result]
+    fever_value = [t[0] for t in result]
+    news_value = [t[1] for t in result]
+    forum_value = [t[2] for t in result]
+    weibo_value = [t[3] for t in result]
+    joblib.dump(title, os.path.join(model_dir, 'component_keyword.list'))
+    joblib.dump(fever_value, os.path.join(model_dir, 'component_fever_value.list'))
+    joblib.dump(news_value, os.path.join(model_dir, 'component_news_value.list'))
+    joblib.dump(forum_value, os.path.join(model_dir, 'component_forum_value.list'))
+    joblib.dump(weibo_value, os.path.join(model_dir, 'component_weibo_value.list'))
+    return title, fever_value, news_value, forum_value, weibo_value
+
+
 def draw_rank(month=8):
     if os.path.exists(os.path.join(model_dir, 'title.list')) and os.path.join(model_dir, 'value.list'):
         title = joblib.load(os.path.join(model_dir, 'title.list'))
@@ -72,6 +111,33 @@ def draw_rank(month=8):
     # fever_chart.reversal_axis()
     fever_chart.set_series_opts(label_opts=opts.LabelOpts(position="top"))
     chart_path = os.path.join(chart_dir, 'fever_rank_chart.html')
+    fever_chart.render(path=chart_path)
+
+
+def draw_rank_with_three_component(month=8):
+    if os.path.exists(os.path.join(model_dir, 'component_keyword.list')) \
+            and os.path.join(model_dir, 'component_fever_value.list') \
+            and os.path.join(model_dir, 'component_news_value.list')\
+            and os.path.join(model_dir, 'component_forum_value.list')\
+            and os.path.join(model_dir, 'component_weibo_value.list'):
+        keywords = joblib.load(os.path.join(model_dir, 'component_keyword.list'))
+        fever_values = joblib.load(os.path.join(model_dir, 'component_fever_value.list'))
+        news_values = joblib.load(os.path.join(model_dir, 'component_news_value.list'))
+        forum_values = joblib.load(os.path.join(model_dir, 'component_forum_value.list'))
+        weibo_values = joblib.load(os.path.join(model_dir, 'component_weibo_value.list'))
+    else:
+        keywords, fever_values, news_values, forum_values, weibo_values = topic_fever_rank_three_component(month=month)
+    fever_chart = chart_config(canvas_width='1500px',
+                               canvas_height='700px',
+                               tip_formats='{b}:{c}\n',
+                               )
+    fever_chart.add_xaxis(keywords)
+    fever_chart.add_yaxis("新闻", news_values, stack="stack1")
+    fever_chart.add_yaxis("食品论坛", forum_values, stack="stack1")
+    fever_chart.add_yaxis("微博", weibo_values, stack="stack1")
+    # fever_chart.reversal_axis()
+    fever_chart.set_series_opts(label_opts=opts.LabelOpts(position="top", is_show=False))
+    chart_path = os.path.join(chart_dir, 'fever_rank_chart_three_component.html')
     fever_chart.render(path=chart_path)
 
 
@@ -114,3 +180,4 @@ if __name__ == '__main__':
     # rank_list = topic_fever_rank(cur_month)
     # print(rank_list)
     draw_rank()
+    draw_rank_with_three_component()

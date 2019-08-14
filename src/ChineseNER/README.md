@@ -1,4 +1,54 @@
+# 命名实体标注模型
+
+- 原库地址：https://github.com/zjy-ucas/ChineseNER
+- 在原库上略作修改
+
+## 准备
+
+- 将数据分为train、dev、test三部分，放入`data`文件夹中。
+- 准备语料库：`wiki_100.utf8`，放在项目根目录下。
+
+## 运行
+
+### 训练模型
+
+- 使用默认参数：
+
+  ```shell
+  $ python3 main.py --train=True --clean=True
+  ```
+
+  数据使用了data文件夹下的`new_food.train`、`new_food.dev`、`new_food.test`。
+
+- 使用指定数据，假设数据分别为train、dev、test。
+
+  ```shell
+  $ python3 main.py --train=True --clean=True --train_file='data/train' --dev_file='data/dev' --test_file='data/test'
+  ```
+
+  
+
+### 测试模型
+
+```shell
+$ python3 main.py
+```
+
+## 结果
+
+- `config_file`：配置文件
+- `maps.pkl`：存储映射数据
+- `ckpt`文件夹：生成的模型文件
+- `train`文件夹，存放`train.log`训练日志
+
+
+
+以下是原库说明。
+
+-----
+
 ## Recurrent neural networks for Chinese named entity recognition in TensorFlow
+
 This repository contains a simple demo for chainese named entity recognition.
 
 ## Contributer
@@ -35,6 +85,7 @@ $ python3 main.py --train=True --clean=True
 ```
 
 ### Online evaluate:
+
 ```shell
 $ python3 main.py
 ```

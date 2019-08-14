@@ -55,10 +55,11 @@ class DataPredict:
     def __init__(self):
         self.date, self.hot = self.get_date_fever(month=8)
 
-    def get_date_fever(self, month):
+    @staticmethod
+    def get_date_fever(month):
         hot = calculate_fever_by_topic(topic_id=21, month=month)
         days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-        date = [i for i in range(1, days[month-1] + 1)]
+        date = [i for i in range(1, days[month - 1] + 1)]
 
         return date, hot
 
@@ -98,7 +99,6 @@ class DataPredict:
         model = GPRY()  # specify model (GP regression)
         model.getPosterior(x, y)  # fit default model (mean zero & rbf kernel) with data
         model.optimize(x, y)  # optimize hyperparamters (default optimizer: single run minimize)
-
 
         model.predict(z)
         model.draw_figure(p_x, p_y)

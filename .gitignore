@@ -1,4 +1,4 @@
-﻿# ignore data & result of src
+# ignore data & result of src
 src/**/ts_videos
 src/**/wav_audios
 src/**/words_result
@@ -21,10 +21,10 @@ src/Crawler/**/*.png
 src/Crawler/**/*.xlsx
 src/Crawler/**/*.json
 src/ChineseNER/wiki_100.utf8
-src/YEDDA-new/food_data
-src/YEDDA-new/shipintest
-src/YEDDA-new/tex2pdf
-src/YEDDA-new/*.png
+src/YEDDA/food_data
+src/YEDDA/shipintest
+src/YEDDA/tex2pdf
+src/YEDDA/*.png
 src/DataProcess/*.csv
 src/DataProcess/model/*
 src/DataProcess/topic_doc/*
@@ -161,8 +161,8 @@ dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
 *.pdf
 src/CutNews/anns_data/
 src/CutNews/origin_data/
-src/YEDDA-new/food_data/
-src/YEDDA-new/demotext/
+src/YEDDA/food_data/
+src/YEDDA/demotext/
 src/Crawler/weibo_search_spider/*.xls
 src/SentimentAnalyse/format_data/*
 src/SentimentAnalyse/origin_data/*
