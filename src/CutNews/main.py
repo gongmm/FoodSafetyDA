@@ -6,37 +6,44 @@ origin_train_path = "data/food.train"
 origin_test_path = "data/food.test"
 origin_dev_path = "data/food.dev"
 
+
 def split_train_test_dev():
+    """
+    数据集切分：将数据集按照7：2：1的比例划分为训练集、测试集、开发集
+    :return:
+    """
     path_dir = os.listdir(file_path)
     sum_num = len(path_dir)
     for index, filename in enumerate(path_dir):
         child = os.path.join('%s%s' % (file_path, filename))
-        # 划分训练/测试/开发集
         if index < sum_num * 0.7:
             with open(origin_train_path, 'a+', encoding='utf-8') as fw:
                 with open(child, 'r', encoding='utf-8') as fr:
                     anns = fr.read()
-                    # re.sub('\n+', '\n', fr.read().strip())
+                    # 去掉错误标记的行
                     anns = re.sub('\n\s*O\n+', '\n', anns)
                 fw.write(anns)
         elif sum_num * 0.7 <= index < sum_num * 0.9:
             with open(origin_test_path, 'a+', encoding='utf-8') as fw:
                 with open(child, 'r', encoding='utf-8') as fr:
                     anns = fr.read()
-                    # re.sub('\n+', '\n', fr.read().strip())
                     anns = re.sub('\n\s*O\n+', '\n', anns)
                 fw.write(anns)
         elif index > sum_num * 0.9:
             with open(origin_dev_path, 'a+', encoding='utf-8') as fw:
                 with open(child, 'r', encoding='utf-8') as fr:
                     anns = fr.read()
-                    # re.sub('\n+', '\n', fr.read().strip())
                     anns = re.sub('\n\s*O\n+', '\n', anns)
                 fw.write(anns)
 
 
-
 def cut_file(readfile, writefile):
+    """
+    切分长新闻
+    :param readfile:
+    :param writefile:
+    :return:
+    """
     with open(readfile, "r", encoding="utf-8") as food_dev_file:
         with open(writefile, "a+", encoding="utf-8") as write_file:
             write_file.truncate()

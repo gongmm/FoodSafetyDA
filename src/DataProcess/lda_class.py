@@ -29,7 +29,8 @@ class LDAClass:
         # print(self.corpus)
 
     def print_top_words(self, n_top_words=20):
-        """ 打印lda主题词
+        """
+        打印lda主题词
 
         Args:
             n_top_words : 选取的关键词个数
@@ -45,7 +46,8 @@ class LDAClass:
             print(u'*Topic {}\n- {}'.format(i, ' '.join(topic_words)))
 
     def save_topic(self, writefile='result/doc_topic.csv'):
-        """ 将每篇doc对应的topic存储 [doc_id, topic_id]
+        """
+        将每篇doc对应的topic存储 [doc_id, topic_id]
             doc_id 从0开始
             topic_id 从0开始
 
@@ -75,7 +77,8 @@ class LDAClass:
                 writer.writerow([str(doc_id), str(topic_id)])
 
     def write_doc_topic_to_origin(self, readfile, writefile):
-        """ 在原文档后加一列表示每篇文档对应的主题
+        """
+        在原文档后加一列表示每篇文档对应的主题
 
         Args:
             readfile: 读取的源文件的地址
@@ -107,6 +110,11 @@ class LDAClass:
                     n = n + 1
 
     def draw_topic_word(self):
+        """
+        绘制主题词分布图
+        Returns:
+
+        """
         lda_model = joblib.load(self.lda_model_file)
         if lda_model is None:
             return
@@ -129,6 +137,11 @@ class LDAClass:
         plt.show()
 
     def draw_doc_topic(self):
+        """
+        绘制文档——主题分布图
+        Returns:
+
+        """
         lda_model = joblib.load(self.lda_model_file)
         if lda_model is None:
             return
@@ -152,7 +165,8 @@ class LDAClass:
         plt.show()
 
     def save_topic_word(self, n_top_words=20, writefile='result/food_topic_word.csv'):
-        """将话题关键词存入单独的csv文件 ['topic_id', 'topic_word']
+        """
+        将话题关键词存入单独的csv文件 ['topic_id', 'topic_word']
 
         Args:
             n_top_words: 选取的关键词个数

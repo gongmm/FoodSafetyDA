@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import csv
 import os
 import pandas as pd
 import numpy as np
-import chardet
 from matplotlib import pyplot as plt
 
 origin_path = 'origin_data'

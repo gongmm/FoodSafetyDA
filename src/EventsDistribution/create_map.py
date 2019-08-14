@@ -171,5 +171,5 @@ def merge(dict1, dict2):
 
 
 if __name__ == '__main__':
-    # create_map(45)
+    create_map(45)
     create_total_map()
