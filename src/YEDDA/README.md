@@ -1,4 +1,29 @@
-![YEDDA Logo](https://github.com/jiesutd/YEDDA/blob/master/YEDDAlogo.png) 
+# 人工标注命名实体
+
+- 原库地址：https://github.com/jiesutd/YEDDA
+
+- 在原库上略作修改
+
+## 准备
+
+- 在`configs/default.config`中配置所需的标签及快捷键。
+- 准备好数据文件夹（名字随意），每个数据文件命名为`news_content{数字}.txt`。
+
+## 运行
+
+```shell
+$ python3 YEDDA_Annotator.py
+```
+
+## 结果
+
+- 在数据文件夹中生成`news_content{数字}.ann`、`news_content{数字}.anns`。
+
+- 将所有`news_content{数字}.anns`的内容拼接起来作为数据，进行切分后，可送入`ChineseNER`模块中进行训练。
+
+
+
+以下是原库说明。
 
 --------------------------------------------------------------------------------
 
@@ -21,10 +46,10 @@ Interface:
 ====
 It provides both annotator interface for efficient annotatation and admin interface for result analysis.
 * Annotator Interface:
- ![alt text](EnglishInterface.png "English Interface demo")
- ![alt text](ChineseInterface.png "Chinese Interface demo")
+ ![alt text](https://github.com/jiesutd/YEDDA/blob/master/EnglishInterface.png)
+ ![alt text](https://github.com/jiesutd/YEDDA/blob/master/ChineseInterface.png)
 * Administrator Interface:
- ![alt text](AdminInterface.png "Administrator Interface demo")
+ ![alt text](https://github.com/jiesutd/YEDDA/blob/master/AdminInterface.png)
 
 Use as an annotator ?
 ====
