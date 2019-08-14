@@ -137,6 +137,38 @@ def calculate_fever_by_topic(topic_id, standardize=True, readfile='format_data/s
     return result
 
 
+def calculate_three_part_by_topic(topic_id, readfile='format_data/sentiment_topic_analysis_info.csv'):
+    w1 = 0.5
+    w2 = 0.3
+    w3 = 0.2
+    post_w = 0.8 * w2
+    reply_w = 0.15 * w2
+    read_w = 0.05 * w2
+
+    weibo_post_w = 0.4 * w3
+    weibo_comment_w = 0.3 * w3
+    weibo_like_w = 0.1 * w3
+    weibo_repost_w = 0.2 * w3
+
+    news_number = get_news_number_by_topic(topic_id)
+    forum_post_number, forum_reply_number, forum_read_number = get_forum_info_by_topic(topic_id)
+    weibo_post_number, weibo_comment_number, weibo_like_number, weibo_repost_number = get_weibo_info_by_topic(topic_id)
+
+    result_news = calculate_core(news_number, w1)
+    result_forum = calculate_core(forum_post_number, post_w) + calculate_core(forum_read_number, read_w) \
+                   + calculate_core(forum_reply_number, reply_w)
+    result_weibo = calculate_core(weibo_post_number, weibo_post_w) + calculate_core(weibo_comment_number,
+                                                                                    weibo_comment_w) \
+                   + calculate_core(weibo_like_number, weibo_like_w) + calculate_core(weibo_repost_number,
+                                                                                      weibo_repost_w)
+
+    result_news = result_news.tolist()
+    result_forum = result_forum.tolist()
+    result_weibo = result_weibo.tolist()
+
+    return result_news, result_forum, result_weibo
+
+
 def round_result(result_list):
     for index in range(len(result_list)):
         result_list[index] = round(result_list[index])
