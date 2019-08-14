@@ -106,9 +106,9 @@ def calculate_core(number_list, w):
 
 
 def calculate_fever_by_topic(topic_id, standardize=True, readfile='format_data/sentiment_topic_analysis_info.csv'):
-    w1 = 0.5
+    w1 = 0.65
     w2 = 0.3
-    w3 = 0.2
+    w3 = 0.05
     post_w = 0.8 * w2
     reply_w = 0.15 * w2
     read_w = 0.05 * w2
@@ -138,9 +138,9 @@ def calculate_fever_by_topic(topic_id, standardize=True, readfile='format_data/s
 
 
 def calculate_three_part_by_topic(topic_id, readfile='format_data/sentiment_topic_analysis_info.csv'):
-    w1 = 0.5
+    w1 = 0.65
     w2 = 0.3
-    w3 = 0.2
+    w3 = 0.05
     post_w = 0.8 * w2
     reply_w = 0.15 * w2
     read_w = 0.05 * w2
