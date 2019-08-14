@@ -218,8 +218,23 @@ def standardization(fever_list):
     return fever_list
 
 
+def calculate_news_number():
+    number = 0
+    for topic_id in range(45):
+        file_path = os.path.join(format_path, "weibo_topic" + str(topic_id) + ".csv")
+        try:
+            # 读写csv文件
+            df = pd.read_csv(file_path)
+        except:
+            print("微博信息中不存在topic_" + str(topic_id))
+        else:
+            number += df.shape[0]
+    return number
+
+
 if __name__ == '__main__':
-    format_data()
+    # format_data()
+    print(calculate_news_number())
     # gbk_2_utf('format_data/forum_topic21.csv', 'format_data/forum_topic21_format.csv')
     # reformat_date("format_data/all_news_data_utf_topic.csv", "format_data/all_news_data_utf_topic.csv")
     topic_num = 21
