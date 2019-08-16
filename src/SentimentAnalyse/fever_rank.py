@@ -5,7 +5,7 @@ from pyecharts import options as opts
 import pyecharts.globals
 from sklearn.externals import joblib
 
-from sentiment_fever import calculate_fever_by_topic, calculate_three_part_by_topic
+from sentiment_fever import calculate_fever_by_topic, calculate_three_part_by_month
 
 chart_dir = 'chart'
 model_dir = 'result'
@@ -67,15 +67,7 @@ def topic_fever_rank(month, topic_num=45):
 
 
 def topic_fever_rank_three_component(month, topic_num=45):
-    topic_fever_dict = {}
-    id_list = get_id_list()
-    fever_values = []
-    news_values = []
-    forum_values = []
-    weibo_values = []
-    keywords = []
-
-    result_fever, result_news, result_forum, result_weibo = calculate_three_part_by_topic(month)
+    result_fever, result_news, result_forum, result_weibo = calculate_three_part_by_month(month)
     keywords = get_keywords()
     z = zip(result_fever, result_news, result_forum, result_weibo, keywords)
     result = sorted(z, reverse=True)
