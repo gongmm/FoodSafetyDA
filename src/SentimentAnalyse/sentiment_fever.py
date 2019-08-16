@@ -256,7 +256,10 @@ def standardization(fever_list):
     max_value = max(fever_list)
     min_value = min(fever_list)
     for index in range(len(fever_list)):
-        fever_list[index] = (fever_list[index] - min_value) / (max_value - min_value)
+        if max_value - min_value == 0:
+            fever_list[index] = 0
+        else:
+            fever_list[index] = (fever_list[index] - min_value) / (max_value - min_value)
     return fever_list
 
 
