@@ -180,8 +180,8 @@ def calculate_three_part_by_topic(topic_id):
 
 def calculate_three_part_by_month(month, topic_number=45, standardize=True):
     w1 = 0.5
-    w2 = 0.25
-    w3 = 0.25
+    w2 = 0.15
+    w3 = 0.35
     post_w = 0.8
     reply_w = 0.15
     read_w = 0.05
