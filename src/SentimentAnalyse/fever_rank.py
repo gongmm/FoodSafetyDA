@@ -15,7 +15,7 @@ if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
 
-def get_keywords(id):
+def get_keyword_by_id(id):
     id_list = []
     word_list = []
     with open('keywords.txt', 'r') as f:
@@ -27,6 +27,15 @@ def get_keywords(id):
     index = id_list.index(str(id))
     keyword = word_list[index]
     return keyword
+
+
+def get_keywords():
+    keywords = []
+    with open('keywords.txt', 'r') as f:
+        for info in f.readlines():
+            keyword = info.split(',')[-1].strip()
+            keywords.append(keyword)
+    return keywords
 
 
 def get_id_list():
@@ -45,7 +54,7 @@ def topic_fever_rank(month, topic_num=45):
         if str(topic) in id_list:
             fever_list = calculate_fever_by_topic(topic_id=topic, standardize=False)
             fever = fever_list[month - 1]
-            keyword = get_keywords(topic)
+            keyword = get_keyword_by_id(topic)
             topic_fever_dict[keyword] = fever
     z = zip(topic_fever_dict.values(), topic_fever_dict.keys())
     result = sorted(z, reverse=True)
@@ -65,22 +74,10 @@ def topic_fever_rank_three_component(month, topic_num=45):
     forum_values = []
     weibo_values = []
     keywords = []
-    for topic in range(topic_num):
-        if str(topic) in id_list:
-            fever_list = calculate_fever_by_topic(topic_id=topic, standardize=False)
-            result_news, result_forum, result_weibo = calculate_three_part_by_topic(topic_id=topic)
-            fever = fever_list[month - 1]
-            news_value = result_news[month - 1]
-            forum_value = result_forum[month - 1]
-            weibo_value = result_weibo[month - 1]
-            keyword = get_keywords(topic)
-            topic_fever_dict[keyword] = fever
-            fever_values.append(fever)
-            news_values.append(news_value)
-            forum_values.append(forum_value)
-            weibo_values.append(weibo_value)
-            keywords.append(keyword)
-    z = zip(fever_values, news_values, forum_values, weibo_values, keywords)
+
+    result_fever, result_news, result_forum, result_weibo = calculate_three_part_by_topic(month)
+    keywords = get_keywords()
+    z = zip(result_fever, result_news, result_forum, result_weibo, keywords)
     result = sorted(z, reverse=True)
     # result = sorted(z)
     title = [t[-1] for t in result]
