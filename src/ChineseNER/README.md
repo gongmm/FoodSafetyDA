@@ -34,6 +34,8 @@
 $ python3 main.py
 ```
 
+注：`food` 和 `other`文件夹分别存放着已经训练好的模型文件。将`food`或者`other`文件夹中的所有文件移出到ChineseNER文件夹下可直接进行测试。
+
 ## 结果
 
 - `config_file`：配置文件
