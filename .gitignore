@@ -3,10 +3,6 @@ src/**/ts_videos
 src/**/wav_audios
 src/**/words_result
 src/**/csv
-src/Crawler/**/*.txt
-src/Crawler/**/*.csv
-src/Crawler/**/*.mp4
-
 src/**/.idea
 src/**/ckpt
 src/**/result
@@ -16,10 +12,14 @@ src/CutNews/data
 src/CutNews/anns_data
 src/Crawler/**/*.txt
 src/Crawler/**/*.csv
+src/Crawler/**/*.mp4
 src/Crawler/**/*.json
 src/Crawler/**/*.png
 src/Crawler/**/*.xlsx
-src/Crawler/**/*.json
+src/ChineseNER/ckpt/*
+src/ChineseNER/result/*
+src/ChineseNER/data/*
+src/ChineseNER/maps.pkl
 src/ChineseNER/wiki_100.utf8
 src/YEDDA/food_data
 src/YEDDA/shipintest
@@ -31,13 +31,7 @@ src/DataProcess/topic_doc/*
 src/DataProcess/cluster/*
 src/DataProcess/vec_arr/*
 src/DataProcess/data_random/*
-
-
-src/ChineseNER/ckpt/*
-src/ChineseNER/result/*
-src/ChineseNER/data/*
-src/ChineseNER/maps.pkl
-
+src/DataProcess/statistics/*
 backup/*
 **/backup/*
 **/**/backup/*
@@ -156,7 +150,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-dn_src/命名实体识别代码/识别代码/ChineseNER-master/wiki_100.utf8
 *.rar
 *.pdf
 src/CutNews/anns_data/
@@ -171,3 +164,4 @@ src/SentimentAnalyse/useless_data/*
 src/Crawler/weibo_search_spider/search_2.py
 src/EventsDistribution/map/*
 src/DataProcess/statistics/*
+数据汇总/*
