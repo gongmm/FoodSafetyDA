@@ -4,8 +4,8 @@ from pyecharts.charts import Bar
 from pyecharts import options as opts
 import pyecharts.globals
 from sklearn.externals import joblib
-
 from sentiment_fever import calculate_fever_by_topic, calculate_three_part_by_month
+import csv
 
 chart_dir = 'chart'
 model_dir = 'result'
@@ -106,8 +106,8 @@ def draw_rank(month=8):
 def draw_rank_with_three_component(month=8):
     if os.path.exists(os.path.join(model_dir, 'component_keyword.list')) \
             and os.path.join(model_dir, 'component_fever_value.list') \
-            and os.path.join(model_dir, 'component_news_value.list')\
-            and os.path.join(model_dir, 'component_forum_value.list')\
+            and os.path.join(model_dir, 'component_news_value.list') \
+            and os.path.join(model_dir, 'component_forum_value.list') \
             and os.path.join(model_dir, 'component_weibo_value.list'):
         keywords = joblib.load(os.path.join(model_dir, 'component_keyword.list'))
         fever_values = joblib.load(os.path.join(model_dir, 'component_fever_value.list'))
@@ -128,6 +128,16 @@ def draw_rank_with_three_component(month=8):
     fever_chart.set_series_opts(label_opts=opts.LabelOpts(position="top", is_show=False))
     chart_path = os.path.join(chart_dir, 'fever_rank_chart_three_component.html')
     fever_chart.render(path=chart_path)
+
+    # 将数据保存到csv
+    headers = ['keyword', 'news-value', 'forum-value', 'weibo-value', 'fever-value']
+    data_save_path = os.path.join(model_dir, "fever_data.csv")
+    with open(data_save_path, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(headers)
+        for index, keyword in enumerate(keywords):
+            writer.writerow(
+                [keywords[index], news_values[index], forum_values[index], weibo_values[index], fever_values[index]])
 
 
 def chart_config(canvas_width='800px', canvas_height='500px',
@@ -168,5 +178,5 @@ if __name__ == '__main__':
     cur_month = 8
     # rank_list = topic_fever_rank(cur_month)
     # print(rank_list)
-    draw_rank()
+    # draw_rank()
     draw_rank_with_three_component()

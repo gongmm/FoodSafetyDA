@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import csv
+
 import pyGPs
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,8 +48,16 @@ class GPRY(pyGPs.GPR):
         plt.plot(x, y, color=DATACOLOR, ls='None', marker='+', ms=12, mew=2)
         plt.plot(pre_x, pre_y, color=PRETCOLOR, ls='None', marker='+', ms=12, mew=2)
         plt.plot(p_x, p_y, color=REALDATACOLOR, ls='None', marker='+', ms=12, mew=2)
-
+        # 保存图片
+        plt.savefig('result/trend_prediction.png', bbox_inches='tight')
         plt.show()
+        # 将数据保存为csv
+        headers = ['x_value', 'origin_data', 'mean_data']
+        with open('result/trend_prediction_data.csv', 'w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+            for index, x_value in enumerate(x):
+                writer.writerow([x_value, y[index][0], ym[index][0]])
 
 
 class DataPredict:
