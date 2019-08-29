@@ -1,4 +1,4 @@
-﻿# ignore data & result of src
+# ignore data & result of src
 src/**/ts_videos
 src/**/wav_audios
 src/**/words_result
@@ -162,4 +162,6 @@ src/SentimentAnalyse/origin_data/*
 src/SentimentAnalyse/useless_data/*
 !src/Crawler/weibo_search_spider/keywords.txt
 src/Crawler/weibo_search_spider/search_2.py
+src/EventsDistribution/map/*
+src/DataProcess/statistics/*
 数据汇总/*
